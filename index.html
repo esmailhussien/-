@@ -7,14 +7,12 @@
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
 
     <style>
-        /* إعدادات الهوية البصرية */
         :root {
-            --primary-color: #1A3C6B; /* أزرق داكن رسمي */
-            --accent-color: #2ECC71;  /* أخضر للإجراءات */
+            --primary-color: #1A3C6B;
+            --accent-color: #2ECC71;
             --bg-color: #F8F9FA;
             --text-dark: #2c3e50;
         }
@@ -29,7 +27,6 @@
             flex-direction: column;
         }
 
-        /* الشريط العلوي */
         .header {
             background-color: var(--primary-color);
             color: white;
@@ -41,36 +38,17 @@
             gap: 10px;
         }
 
-        .header img { height: 40px; } /* مكان الشعار */
         .header h1 { margin: 0; font-size: 1.2rem; font-weight: 700; }
 
-        /* حاوية الخريطة */
         #map {
             flex-grow: 1;
             width: 100%;
             z-index: 1;
+            cursor: crosshair; /* تغيير شكل المؤشر ليوحي بإمكانية النقر */
         }
 
-        /* مؤشر المنتصف الثابت */
-        .center-marker {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 999;
-            pointer-events: none; /* يسمح بالضغط على الخريطة تحته */
-        }
-        
-        .pin-bounce {
-            animation: bounce 1s infinite;
-        }
+        /* تم إزالة تنسيقات الدبوس الثابت القديم (.center-marker) */
 
-        @keyframes bounce {
-            0%, 100% { transform: translate(-50%, -50%) translateY(0); }
-            50% { transform: translate(-50%, -50%) translateY(-10px); }
-        }
-
-        /* زر الاستعلام العائم */
         .action-container {
             position: absolute;
             bottom: 30px;
@@ -100,7 +78,6 @@
 
         .btn-check:active { transform: scale(0.98); }
 
-        /* بطاقة النتيجة (Modal) */
         .result-modal {
             position: fixed;
             bottom: 0;
@@ -142,16 +119,17 @@
         .info-label { font-size: 0.9rem; color: #7f8c8d; display: block; margin-bottom: 3px;}
         .info-value { font-size: 1.1rem; color: var(--text-dark); font-weight: bold; }
 
-        .status-badge {
+        /* تنسيق بسيط للحالة (لون فقط بدون نص إضافي) */
+        .status-dot {
             display: inline-block;
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 0.8rem;
-            margin-top: 5px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
         }
-        .status-commercial { background-color: #e3f2fd; color: #1976d2; }
-        .status-residential { background-color: #e8f5e9; color: #2e7d32; }
-        .status-unknown { background-color: #f3e5f5; color: #7b1fa2; }
+        .bg-green { background-color: #2e7d32; }
+        .bg-blue { background-color: #1976d2; }
+        .bg-purple { background-color: #7b1fa2; }
 
     </style>
 </head>
@@ -167,12 +145,6 @@
 
     <div id="map"></div>
 
-    <div class="center-marker">
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 0C7.58 0 4 3.58 4 8C4 14.42 12 24 12 24C12 24 20 14.42 20 8C20 3.58 16.42 0 12 0ZM12 11C10.34 11 9 9.66 9 8C9 6.34 10.34 5 12 5C13.66 5 15 6.34 15 8C15 9.66 13.66 11 12 11Z" fill="#E74C3C"/>
-        </svg>
-    </div>
-
     <div class="action-container">
         <button class="btn-check" onclick="checkLocation()">تحديد المنطقة</button>
     </div>
@@ -187,7 +159,7 @@
             <div class="info-icon">📍</div>
             <div>
                 <span class="info-label">الحي التابع</span>
-                <span class="info-value" id="districtName">جاري التحميل...</span>
+                <span class="info-value" id="districtName">--</span>
             </div>
         </div>
 
@@ -195,57 +167,66 @@
             <div class="info-icon">🏘️</div>
             <div>
                 <span class="info-label">نوع المنطقة</span>
-                <span class="info-value" id="districtType">جاري التحميل...</span>
-                <div id="typeBadge"></div>
+                <div style="display: flex; align-items: center;">
+                    <span id="statusDot" class="status-dot"></span>
+                    <span class="info-value" id="districtType">--</span>
+                </div>
             </div>
         </div>
         
-        <div style="text-align: center; font-size: 0.8rem; color: #999; margin-top: 10px;">
-            البيانات مستخرجة من المخطط الاستراتيجي المعتمد لحي شرق
         </div>
-    </div>
 
     <script>
-        // 1. تحميل البيانات (تم دمج محتوى ملف sharq.json هنا للمحاكاة)
-        // في التطبيق الحقيقي، يتم تحميل هذا الملف من السيرفر
+        // 1. البيانات (للمحاكاة)
         const geoData = {
             "features": [
-                // مقتطف من البيانات - سيتم الاعتماد على البيانات الكاملة في التنفيذ الفعلي
-                // لقد قمت بإدراج البيانات الحقيقية من ملفك ليعمل الكود بدقة
                  {"attributes":{"FID":0,"الحي":"شرق","type":"اقتصادية"},"geometry":{"rings":[[[30.052622,31.184940],[30.052972,31.184622],[30.050795,31.182809],[30.048439,31.180760],[30.029899,31.173005],[29.995518,31.162961],[29.995039,31.180458],[29.996257,31.184936],[30.052622,31.184940]]]}},
                  {"attributes":{"FID":1,"الحي":"شرق","type":"سكنية"},"geometry":{"rings":[[[29.994560,31.205895],[29.994336,31.209127],[30.007596,31.211721],[30.015793,31.206988],[30.035072,31.198364],[30.021116,31.201194],[29.994560,31.205895]]]}},
-                 // ... (تم اختصار البيانات في العرض النصي للحفاظ على المساحة، 
-                 // لكن الكود سيعمل بمنطق البحث في البيانات الكاملة إذا أضفت باقي ال features هنا)
-                 // ملاحظة: لكي يعمل الكود بدقة 100% مع ملفك، سأقوم بوضع المنطق الذي يعالج الملف الكامل
             ]
         };
-        
-        // **هام:** للحصول على دقة كاملة، يجب استبدال مصفوفة features أعلاه
-        // بمحتوى مصفوفة "features" الموجودة في ملف sharq.json بالكامل.
-        // قمت بوضع مضلعين فقط كمثال (سموحة / الشرق) للتجربة.
 
         // 2. إعداد الخريطة
-        // التركيز المبدئي على الإسكندرية (حي شرق)
-        const map = L.map('map', { zoomControl: false }).setView([31.2001, 29.9600], 13);
+        const initialCoords = [31.2001, 29.9600];
+        const map = L.map('map', { zoomControl: false }).setView(initialCoords, 13);
         
-        // إضافة طبقة خريطة الشوارع (OpenStreetMap) بتصميم فاتح ونظيف
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-            attribution: '© OpenStreetMap contributors'
+            attribution: '© OpenStreetMap'
         }).addTo(map);
 
-        // 3. خوارزمية تحديد النقطة داخل المضلع (Ray Casting Algorithm)
-        // هذه الدالة هي "العقل" الذي يخفي البيانات ويعطي النتيجة فقط
+        // 3. إنشاء الدبوس القابل للتحريك (Draggable Marker)
+        // هذا هو التغيير الرئيسي: الدبوس الآن عنصر في الخريطة وليس طبقة CSS فوقها
+        const markerIcon = L.icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
+
+        const mainMarker = L.marker(initialCoords, {
+            draggable: true, // تفعيل السحب
+            icon: markerIcon
+        }).addTo(map);
+
+        // تحديث الدبوس عند النقر في أي مكان على الخريطة
+        map.on('click', function(e) {
+            mainMarker.setLatLng(e.latlng);
+            closeModal(); // إغلاق النتيجة إذا غير المكان
+        });
+
+        // إغلاق النتيجة عند سحب الدبوس
+        mainMarker.on('dragstart', function() {
+            closeModal();
+        });
+
+        // 4. خوارزمية النقطة داخل المضلع
         function isPointInPolygon(point, vs) {
-            // point: [longitude, latitude]
-            // vs: array of [long, lat] coordinates (Rings)
-            
             var x = point[0], y = point[1];
             var inside = false;
-            
             for (var i = 0, j = vs.length - 1; i < vs.length; j = i++) {
                 var xi = vs[i][0], yi = vs[i][1];
                 var xj = vs[j][0], yj = vs[j][1];
-                
                 var intersect = ((yi > y) != (yj > y)) &&
                     (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
                 if (intersect) inside = !inside;
@@ -253,45 +234,22 @@
             return inside;
         }
 
-        // 4. وظيفة التحقق (عند الضغط على الزر)
+        // 5. وظيفة التحقق
         async function checkLocation() {
-            const center = map.getCenter(); // الحصول على إحداثيات الدبوس (Lat, Lng)
-            const userPoint = [center.lng, center.lat]; // تحويل إلى [Long, Lat] لمطابقة ملف JSON
+            // الآن نأخذ الإحداثيات من الدبوس (Marker) وليس من مركز الخريطة
+            const position = mainMarker.getLatLng();
+            const userPoint = [position.lng, position.lat]; 
             
-            // محاكاة تحميل
             document.querySelector('.btn-check').textContent = 'جاري التحقق...';
             document.querySelector('.btn-check').style.opacity = '0.8';
 
-            // تأخير بسيط لمحاكاة المعالجة
             setTimeout(() => {
                 let foundRegion = null;
 
-                // ** في التطبيق الفعلي: نقوم بالبحث في جميع الـ 30 ميزة في الملف **
-                // هنا نبحث في البيانات المضمنة في المتغير geoData
-                // ملاحظة: سأقوم بمحاكاة تحميل الملف بالكامل عبر الذاكرة إذا قمت بنسخ المحتوى
-                
-                // البحث داخل المضلعات
-                // (سنفترض وجود المتغير الكامل هنا، أو سنستخدم العينة)
-                // للتجربة: إذا كنت فوق منطقة محددة في العينة سيظهر الاسم
-                // وإلا سنظهر رسالة افتراضية تدل على نجاح المنطق
-                
-                // منطق البحث:
-                /* for (const feature of geoData.features) {
-                    const polygonRings = feature.geometry.rings[0]; 
-                    if (isPointInPolygon(userPoint, polygonRings)) {
-                        foundRegion = feature.attributes;
-                        break;
-                    }
-                }
-                */
-
-                // *ملاحظة للتجربة*: بما أنني لم ألصق الـ 30 مضلع بالكامل هنا لطولها، 
-                // سأضع شرط "محاكاة" بسيط يعتمد على قربك من سموحة لترى النتيجة.
-                
-                // محاكاة النتيجة لغرض العرض (Demo Logic):
-                if (center.lat > 31.18 && center.lat < 31.23 && center.lng > 29.93 && center.lng < 30.00) {
+                // محاكاة النتيجة (Demo Logic)
+                if (position.lat > 31.18 && position.lat < 31.23 && position.lng > 29.93 && position.lng < 30.00) {
                      foundRegion = { "الحي": "شرق", "type": "سكنية مميزة" };
-                } else if (center.lat > 31.16 && center.lat <= 31.18) {
+                } else if (position.lat > 31.16 && position.lat <= 31.18) {
                      foundRegion = { "الحي": "شرق", "type": "اقتصادية" };
                 }
 
@@ -306,35 +264,30 @@
             const modal = document.getElementById('resultModal');
             const distName = document.getElementById('districtName');
             const distType = document.getElementById('districtType');
-            const badge = document.getElementById('typeBadge');
+            const statusDot = document.getElementById('statusDot');
 
             if (data) {
                 distName.textContent = "حي " + data["الحي"];
                 
-                // معالجة نوع المنطقة
                 let typeText = data["type"];
-                if (typeText === "غير معلوم") typeText = "قيد التصنيف"; // تحسين الصياغة
+                if (typeText === "غير معلوم") typeText = "قيد التصنيف";
                 
                 distType.textContent = typeText;
                 
-                // تلوين الحالة
-                badge.className = 'status-badge';
+                // تحديد لون النقطة فقط (بدون نصوص إضافية)
+                statusDot.className = 'status-dot'; // reset
                 if(typeText.includes('سكنية') || typeText.includes('مميز')) {
-                    badge.classList.add('status-residential');
-                    badge.textContent = 'منطقة مسموح بالبناء السكني';
+                    statusDot.classList.add('bg-green');
                 } else if (typeText.includes('اقتصادية')) {
-                    badge.classList.add('status-commercial');
-                    badge.textContent = 'منطقة ذات طبيعة اقتصادية';
+                    statusDot.classList.add('bg-blue');
                 } else {
-                    badge.classList.add('status-unknown');
-                    badge.textContent = 'يرجى مراجعة الحي للتفاصيل';
+                    statusDot.classList.add('bg-purple');
                 }
 
             } else {
                 distName.textContent = "خارج النطاق";
                 distType.textContent = "غير متاح حالياً";
-                badge.textContent = "";
-                badge.className = "";
+                statusDot.className = 'status-dot';
             }
 
             modal.classList.add('show');
@@ -343,16 +296,6 @@
         function closeModal() {
             document.getElementById('resultModal').classList.remove('show');
         }
-
-        // إضافة حركة بسيطة للدبوس عند تحريك الخريطة
-        map.on('movestart', () => {
-            document.querySelector('.center-marker').classList.add('pin-bounce');
-            closeModal();
-        });
-        map.on('moveend', () => {
-            document.querySelector('.center-marker').classList.remove('pin-bounce');
-        });
-
     </script>
 </body>
 </html>
