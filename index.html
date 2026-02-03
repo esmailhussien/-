@@ -312,43 +312,55 @@
         .result-panel {
             pointer-events: auto;
             width: 100%;
-            max-width: 600px; /* عرض مناسب للشاشات الكبيرة */
-            margin: 0 auto; /* توسيط */
+            max-width: 600px;
+            margin: 0 auto;
             background: white;
             border-radius: 24px 24px 0 0;
             box-shadow: 0 -10px 40px rgba(0,0,0,0.15);
             border-top: 1px solid rgba(0,0,0,0.05);
             
-            /* الخصائص الجديدة للمرونة */
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            max-height: 85vh; /* أقصى ارتفاع 85% من الشاشة */
+            max-height: 85vh;
             height: auto;
-            overflow-y: auto; /* تفعيل السكرول داخل البطاقة */
+            overflow-y: auto;
             
-            transform: translateY(105%); /* مخفي للأسفل */
-            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1); /* حركة فيزيائية ناعمة */
+            transform: translateY(105%);
+            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
             z-index: 1000;
-            padding-bottom: 30px; /* مساحة أمان في الأسفل */
+            padding-bottom: 30px;
         }
 
         .result-panel.show {
             transform: translateY(0);
         }
 
-        /* مقبض السحب */
+        /* وضعية التصغير (يظهر فقط المقبض) */
+        .result-panel.peek {
+            transform: translateY(calc(100% - 40px)); /* إخفاء الكل ما عدا آخر 40px (المقبض) */
+            background: #fff;
+            cursor: pointer;
+        }
+
+        /* تحسين شكل المقبض ليكون واضحاً أنه قابل للسحب */
         .panel-handle-area {
             position: sticky;
             top: 0;
             background: white;
             z-index: 20;
             padding: 12px 0 8px 0;
-            cursor: grab;
+            cursor: pointer;
             display: flex;
             justify-content: center;
             border-bottom: 1px solid transparent;
+            transition: background 0.3s, border-bottom 0.3s;
+        }
+
+        .panel-handle-area:hover {
+            background: #f9f9f9;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
         }
 
         .panel-handle {
@@ -356,18 +368,18 @@
             height: 5px;
             background: #e5e7eb;
             border-radius: 100px;
-            transition: background 0.2s;
+            transition: all 0.2s;
         }
 
-        .panel-handle-area:active .panel-handle {
+        .panel-handle-area:hover .panel-handle {
             background: var(--primary);
             width: 50px;
         }
 
         /* تثبيت رأس القائمة (زر الطباعة والعنوان) */
         .panel-header {
-            position: sticky; /* تثبيت العنصر */
-            top: 25px; /* المسافة من الأعلى (بعد المقبض) */
+            position: sticky;
+            top: 25px;
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(5px);
             z-index: 15;
@@ -596,6 +608,127 @@
             border-radius: 3px;
         }
 
+        /* ========== تنسيقات الطباعة (التقرير الرسمي) ========== */
+        @media print {
+            /* إخفاء واجهة التطبيق بالكامل */
+            body > *:not(#printReportTemplate) {
+                display: none !important;
+            }
+
+            /* إعدادات ورقة A4 */
+            @page {
+                size: A4;
+                margin: 10mm;
+            }
+
+            body {
+                background: white;
+                height: auto;
+                overflow: visible;
+            }
+
+            /* إظهار قالب التقرير */
+            #printReportTemplate {
+                display: block !important;
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                background: white;
+                z-index: 9999;
+                direction: rtl;
+                font-family: 'Cairo', sans-serif;
+                color: #000;
+            }
+
+            .report-header {
+                border-bottom: 3px double #333;
+                padding-bottom: 20px;
+                margin-bottom: 30px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .report-title h1 {
+                font-size: 22pt;
+                margin: 0;
+            }
+
+            .report-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 20px 0;
+                font-size: 12pt;
+            }
+
+            .report-table th, .report-table td {
+                border: 1px solid #999;
+                padding: 10px;
+                text-align: right;
+            }
+
+            .report-table th {
+                background-color: #f0f0f0 !important;
+                width: 30%;
+                font-weight: bold;
+                -webkit-print-color-adjust: exact;
+            }
+
+            /* تنسيق خاص لقسم الإيجار في الطباعة */
+            .rent-print-section {
+                margin-top: 30px;
+                border: 2px solid #000;
+                border-radius: 8px;
+                padding: 15px;
+                page-break-inside: avoid;
+            }
+
+            .rent-print-title {
+                background: #000;
+                color: #fff !important;
+                padding: 5px 10px;
+                display: inline-block;
+                border-radius: 4px;
+                margin-bottom: 15px;
+                font-weight: bold;
+                -webkit-print-color-adjust: exact;
+            }
+
+            /* إزالة الخلفيات الملونة للنصوص لتوفير الحبر وزيادة الوضوح */
+            .print-result-row {
+                border-bottom: 1px solid #ccc;
+                margin-bottom: 5px;
+                padding-bottom: 5px;
+                display: flex;
+                justify-content: space-between;
+            }
+            
+            .print-year-badge {
+                border: 1px solid #000;
+                background: none;
+                padding: 2px 6px;
+                border-radius: 3px;
+                font-size: 10px;
+            }
+
+            .footer {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                text-align: center;
+                font-size: 9pt;
+                border-top: 1px solid #ccc;
+                padding-top: 10px;
+            }
+        }
+
+        /* إخفاء القالب في الوضع العادي */
+        #printReportTemplate {
+            display: none;
+        }
+
         /* ========== LOADING OVERLAY ========== */
         .loading-overlay {
             position: fixed;
@@ -719,6 +852,59 @@
 </head>
 <body>
 
+    <!-- قالب التقرير للطباعة -->
+    <div id="printReportTemplate">
+        <header class="report-header">
+            <div style="text-align: right;">
+                <strong>محافظة الإسكندرية</strong><br>
+                بوابة الاستعلام المكاني<br>
+                الإدارة العامة لنظم المعلومات
+            </div>
+            <div class="report-title" style="text-align: center;">
+                <h1>إفادة استعلام</h1>
+                <small>وثيقة استرشادية</small>
+            </div>
+            <div style="text-align: left; font-size: 10pt;">
+                <strong>التاريخ:</strong> <span id="printDate">--</span><br>
+                <strong>الرقم المرجعي:</strong> <span id="printRef">--</span>
+            </div>
+        </header>
+
+        <div class="report-body">
+            <h3>أولاً: بيانات الموقع</h3>
+            <table class="report-table">
+                <tr>
+                    <th>الحي التابع</th>
+                    <td id="printDistrict">--</td>
+                </tr>
+                <tr>
+                    <th>تصنيف المنطقة</th>
+                    <td id="printType">--</td>
+                </tr>
+                <tr>
+                    <th>الإحداثيات</th>
+                    <td id="printCoords" style="direction: ltr; text-align: right;">--</td>
+                </tr>
+            </table>
+
+            <div id="printRentSection" class="rent-print-section" style="display: none;">
+                <div class="rent-print-title">ثانياً: تفاصيل القيمة الإيجارية المقدرة</div>
+                <div id="printRentData"></div>
+            </div>
+
+            <div style="margin-top: 40px; border-top: 1px dashed #000; padding-top: 10px;">
+                <strong>⚠️ إخلاء مسؤولية:</strong>
+                <p style="font-size: 10pt; margin-top: 5px;">
+                    تم استخراج هذه البيانات آلياً بناءً على الموقع المحدد من قبل المستخدم. هذه الوثيقة لغرض الاستدلال فقط ولا تعتبر سند ملكية أو ترخيصاً رسمياً، ولا تغني عن الرجوع للجهات المختصة بالمحافظة.
+                </p>
+            </div>
+        </div>
+
+        <div class="footer">
+            تمت الطباعة عبر البوابة الإلكترونية لمحافظة الإسكندرية | www.alexandria.gov.eg
+        </div>
+    </div>
+
     <!-- LOADING OVERLAY -->
     <div id="loadingOverlay" class="loading-overlay">
         <div class="loader"></div>
@@ -830,6 +1016,7 @@
         let map = null;
         let currentMarker = null;
         let currentDistrictType = "";
+        let hasActiveData = false;
 
         // ============================================================
         // DATA LOADING & API
@@ -881,7 +1068,7 @@
         }
 
         // ============================================================
-        // MAP INITIALIZATION
+        // MAP INITIALIZATION (تحديث لإخفاء البطاقة عند التحرك)
         // ============================================================
         function initMap() {
             map = L.map('map', {
@@ -911,15 +1098,24 @@
             // Enable click on map to place marker
             map.on('click', function(e) {
                 currentMarker.setLatLng(e.latlng);
-                closePanel();
+                resetUI();
                 showGetDataButton();
             });
 
             // Enable marker drag
             currentMarker.on('dragend', function() {
-                closePanel();
+                resetUI();
                 showGetDataButton();
             });
+        }
+
+        // دالة جديدة لتصفير الواجهة عند تغيير المكان
+        function resetUI() {
+            hasActiveData = false;
+            const panel = document.getElementById('resultPanel');
+            panel.classList.remove('show');
+            panel.classList.remove('peek');
+            showGetDataButton();
         }
 
         // Search functionality with Geocoding support
@@ -986,7 +1182,7 @@
         function updateMapPosition(lat, lng) {
             map.setView([lat, lng], CONFIG.locationZoom);
             currentMarker.setLatLng([lat, lng]);
-            closePanel();
+            resetUI();
         }
 
         // ============================================================
@@ -1010,7 +1206,8 @@
                     currentMarker.setLatLng([lat, lng]);
                     
                     btn.classList.remove('loading');
-                    closePanel();
+                    resetUI();
+                    showGetDataButton();
                 },
                 (error) => {
                     btn.classList.remove('loading');
@@ -1066,8 +1263,8 @@
                     // Show "Get Data" button
                     showGetDataButton();
                     
-                    // Close panel if open
-                    closePanel();
+                    // Reset panel
+                    resetUI();
                 },
                 (error) => {
                     btn.disabled = false;
@@ -1131,7 +1328,7 @@
         }
 
         // ============================================================
-        // RESULT DISPLAY
+        // RESULT DISPLAY (تحديث)
         // ============================================================
         function updateCoordinates(position) {
             const coords = document.getElementById('coordinates');
@@ -1221,6 +1418,16 @@
                         </div>
                     </div>
                 `;
+                
+                // تحديد أن لدينا بيانات نشطة الآن
+                hasActiveData = true;
+                
+                // إخفاء زر "الحصول على البيانات" لأننا بالفعل نعرضها
+                hideGetDataButton();
+                
+                // إظهار البطاقة كاملة
+                panel.classList.remove('peek');
+                panel.classList.add('show');
             } else {
                 // حالة عدم العثور على نتائج
                 grid.innerHTML = `
@@ -1230,13 +1437,15 @@
                         <div class="not-found-hint">يرجى التأكد من اختيار موقع داخل حدود الأحياء المسجلة</div>
                     </div>
                 `;
+                
+                hasActiveData = true;
+                panel.classList.remove('peek');
+                panel.classList.add('show');
             }
-            
-            panel.classList.add('show');
         }
 
         // ============================================================
-        // RENT CALCULATION LOGIC
+        // RENT CALCULATION LOGIC (محدث)
         // ============================================================
         function calculateRent() {
             const input = document.getElementById('currentRentInput');
@@ -1248,12 +1457,10 @@
                 return;
             }
 
-            // إعدادات الحساب بناءً على نوع المنطقة
-            let multiplier = 10; // الافتراضي
-            let minRent = 250;   // الافتراضي
-            let typeName = "";
+            let multiplier = 10;
+            let minRent = 250;
+            let typeName = "منطقة اقتصادية";
 
-            // منطق القانون المصري الجديد
             if (currentDistrictType.includes('مميز') || currentDistrictType.includes('راقي')) {
                 multiplier = 20;
                 minRent = 1000;
@@ -1262,65 +1469,57 @@
                 multiplier = 10;
                 minRent = 400;
                 typeName = "منطقة متوسطة";
-            } else {
-                // اقتصادي / شعبي / أو غير محدد
-                multiplier = 10;
-                minRent = 250;
-                typeName = "منطقة اقتصادية";
             }
 
-            // 1. حساب القيمة المبدئية (عدد الأضعاف)
             let calculatedBase = currentRent * multiplier;
-            
-            // 2. تطبيق الحد الأدنى
             let finalBaseRent = Math.max(calculatedBase, minRent);
             let appliedRule = (calculatedBase < minRent) ? "تطبيق الحد الأدنى" : `${multiplier} أضعاف القيمة`;
 
-            // 3. حساب الزيادة السنوية (15%) للسنوات الخمس القادمة
-            let year1 = finalBaseRent;
-            let year2 = year1 * 1.15;
-            let year3 = year2 * 1.15;
-            let year4 = year3 * 1.15;
-            let year5 = year4 * 1.15;
+            let years = [];
+            let rent = finalBaseRent;
+            for(let i=1; i<=5; i++) {
+                years.push(Math.round(rent));
+                rent = rent * 1.15;
+            }
 
-            // عرض النتائج
+            // تم إضافة كلاس 'data-value' لتسهيل الطباعة
             output.innerHTML = `
                 <div style="border-bottom: 1px dashed #ccc; padding-bottom: 10px; margin-bottom: 10px;">
                     <div class="result-row">
                         <span>نوع المنطقة المطبق:</span>
-                        <strong>${typeName}</strong>
+                        <strong class="data-value">${typeName}</strong>
                     </div>
                     <div class="result-row">
                         <span>القيمة الحالية:</span>
-                        <span>${currentRent.toFixed(0)} ج.م</span>
+                        <span class="data-value">${currentRent.toFixed(0)} ج.م</span>
                     </div>
                     <div class="result-row">
                         <span>معادلة الحساب:</span>
-                        <span>${appliedRule} (${multiplier}x)</span>
+                        <span class="data-value">${appliedRule} (${multiplier}x)</span>
                     </div>
                 </div>
 
                 <div style="font-weight: bold; margin-bottom: 8px; font-size: 13px;">تدرج القيمة الإيجارية (زيادة 15% سنوياً):</div>
                 
-                <div class="result-row">
+                <div class="result-row year-row">
                     <span><span class="year-badge">السنة 1</span> الإيجار الجديد</span>
-                    <strong style="color: #059669">${Math.round(year1)} ج.م</strong>
+                    <strong class="data-value" style="color: #059669">${years[0]} ج.م</strong>
                 </div>
-                <div class="result-row">
+                <div class="result-row year-row">
                     <span><span class="year-badge">السنة 2</span></span>
-                    <span>${Math.round(year2)} ج.م</span>
+                    <span class="data-value">${years[1]} ج.م</span>
                 </div>
-                <div class="result-row">
+                <div class="result-row year-row">
                     <span><span class="year-badge">السنة 3</span></span>
-                    <span>${Math.round(year3)} ج.م</span>
+                    <span class="data-value">${years[2]} ج.م</span>
                 </div>
-                <div class="result-row">
+                <div class="result-row year-row">
                     <span><span class="year-badge">السنة 4</span></span>
-                    <span>${Math.round(year4)} ج.م</span>
+                    <span class="data-value">${years[3]} ج.م</span>
                 </div>
-                <div class="result-row">
+                <div class="result-row year-row">
                     <span><span class="year-badge">السنة 5</span></span>
-                    <span>${Math.round(year5)} ج.م</span>
+                    <span class="data-value">${years[4]} ج.م</span>
                 </div>
                 
                 <div style="font-size: 10px; color: #888; margin-top: 10px; text-align: center;">
@@ -1331,8 +1530,19 @@
             output.classList.add('show');
         }
 
+        // تحديث دالة الإغلاق (الذكية)
         function closePanel() {
-            document.getElementById('resultPanel').classList.remove('show');
+            const panel = document.getElementById('resultPanel');
+            
+            if (hasActiveData) {
+                // إذا كان لدينا بيانات، لا نخفيها تماماً بل نصغرها (Peek)
+                panel.classList.remove('show');
+                panel.classList.add('peek');
+            } else {
+                // إذا لم يكن هناك بيانات، إخفاء تام
+                panel.classList.remove('show');
+                panel.classList.remove('peek');
+            }
         }
 
         function showError(message) {
@@ -1340,34 +1550,106 @@
         }
 
         function exportReport() {
-            // التحقق من وجود نتائج
+            // 1. التحقق من وجود نتائج
             const districtElem = document.querySelector('#resultsGrid .result-card:nth-child(1) .card-value');
             if (!districtElem) {
                 showError('يرجى إجراء استعلام وتحديد موقع أولاً.');
                 return;
             }
 
-            // انشاء نافذة طباعة مخصصة
-            // ملاحظة: بما ان القالب غير موجود في HTML، سنقوم بإنشائه ديناميكياً هنا
-            // أو يمكنك إعادة لصق كود HTML/CSS الخاص بالطباعة الذي أرسلته لك سابقاً
+            // 2. تعبئة البيانات الأساسية
+            const now = new Date();
+            document.getElementById('printDate').textContent = now.toLocaleDateString('ar-EG');
+            document.getElementById('printRef').textContent = 'REF-' + Math.floor(Math.random() * 1000000);
             
-            // الحل الأسرع: طباعة الشاشة الحالية بعد تحسينها
-            window.print();
+            document.getElementById('printDistrict').textContent = districtElem.textContent;
+            document.getElementById('printType').textContent = document.querySelector('#resultsGrid .result-card:nth-child(2) .card-value').textContent;
+            document.getElementById('printCoords').textContent = document.getElementById('coordinates').textContent;
+
+            // 3. معالجة قسم الإيجار
+            const calcOutput = document.getElementById('calcOutput');
+            const printRentSection = document.getElementById('printRentSection');
+            const printRentData = document.getElementById('printRentData');
+
+            if (calcOutput && calcOutput.innerHTML.trim() !== "" && calcOutput.classList.contains('show')) {
+                printRentSection.style.display = 'block';
+                
+                // استخراج البيانات بدقة باستخدام الكلاسات الجديدة
+                // 1. البيانات الأساسية (أول 3 صفوف)
+                const allRows = calcOutput.querySelectorAll('.result-row');
+                let typeName = "غير محدد";
+                let currentValue = "0 ج.م";
+                let calculationRule = "غير محدد";
+                
+                if (allRows.length >= 3) {
+                    typeName = allRows[0].querySelector('.data-value').textContent;
+                    currentValue = allRows[1].querySelector('.data-value').textContent;
+                    calculationRule = allRows[2].querySelector('.data-value').textContent;
+                }
+                
+                // 2. بيانات السنوات (الصفوف التي تحتوي على كلاس year-row)
+                const yearRows = calcOutput.querySelectorAll('.year-row');
+                let yearsHtml = '';
+                
+                yearRows.forEach((row, index) => {
+                    const yearNum = index + 1; // رقم السنة
+                    const moneyValue = row.querySelector('.data-value').textContent; // القيمة المالية
+                    
+                    yearsHtml += `
+                        <div class="print-result-row">
+                            <span><span class="print-year-badge">السنة ${yearNum}</span></span>
+                            <span><strong>${moneyValue}</strong></span>
+                        </div>
+                    `;
+                });
+
+                // بناء قالب الطباعة النهائي
+                printRentData.innerHTML = `
+                    <div style="margin-bottom: 15px; border-bottom: 1px dashed #ccc; padding-bottom: 10px;">
+                        <div class="print-result-row">
+                            <span><strong>نوع المنطقة:</strong></span>
+                            <span>${typeName}</span>
+                        </div>
+                        <div class="print-result-row">
+                            <span><strong>القيمة الحالية:</strong></span>
+                            <span>${currentValue}</span>
+                        </div>
+                        <div class="print-result-row">
+                            <span><strong>قاعدة الحساب:</strong></span>
+                            <span>${calculationRule}</span>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 10px;">
+                        <div style="font-weight: bold; margin-bottom: 10px; text-decoration: underline;">جدول تدرج القيمة الإيجارية:</div>
+                        ${yearsHtml}
+                    </div>
+                    <div style="font-size: 9px; color: #666; margin-top: 15px; text-align: center;">
+                        * الأرقام تقريبية لأقرب جنيه صحيح.
+                    </div>
+                `;
+
+            } else {
+                printRentSection.style.display = 'none';
+            }
+
+            setTimeout(() => {
+                window.print();
+            }, 100);
         }
 
         // ============================================================
-        // SMART SWIPE LOGIC (Scroll vs Drag)
+        // SMART SWIPE LOGIC (تحديث للتفاعل مع Peek)
         // ============================================================
         function initPanelSwipe() {
             const panel = document.getElementById('resultPanel');
-            const handle = document.getElementById('dragHandle'); // منطقة المقبض فقط
+            const handle = document.getElementById('dragHandle');
 
             let touchStartY = 0;
             let touchEndY = 0;
             let isDragging = false;
-            const DRAG_THRESHOLD = 100; // المسافة المطلوبة للإغلاق
+            const DRAG_THRESHOLD = 80;
 
-            // 1. السحب من "المقبض" فقط يقوم بتحريك البطاقة
             handle.addEventListener('touchstart', (e) => {
                 touchStartY = e.touches[0].clientY;
                 isDragging = true;
@@ -1376,17 +1658,15 @@
 
             handle.addEventListener('touchmove', (e) => {
                 if (!isDragging) return;
-                
                 touchEndY = e.touches[0].clientY;
                 const deltaY = touchEndY - touchStartY;
                 
-                // السماح بالسحب للأسفل فقط
-                if (deltaY > 0) {
-                    e.preventDefault(); // منع السكرول أثناء سحب المقبض
+                if (deltaY > 0) { // سحب للأسفل
+                    e.preventDefault();
                     panel.style.transform = `translateY(${deltaY}px)`;
-                    panel.style.transition = 'none'; // إزالة الحركة الناعمة أثناء السحب اليدوي
+                    panel.style.transition = 'none';
                 }
-            }, { passive: false }); // passive: false مهم لعمل preventDefault
+            }, { passive: false });
 
             handle.addEventListener('touchend', () => {
                 if (!isDragging) return;
@@ -1394,29 +1674,32 @@
                 panel.style.cursor = '';
                 
                 const deltaY = touchEndY - touchStartY;
-                
-                // إعادة تفعيل الحركة الناعمة
                 panel.style.transition = 'transform 0.4s cubic-bezier(0.25, 1, 0.5, 1)';
-                
+                panel.style.transform = '';
+
                 if (deltaY > DRAG_THRESHOLD) {
-                    closePanel(); // إغلاق إذا سحب مسافة كافية
+                    closePanel(); // سيتحول إلى Peek
                 } else {
-                    panel.style.transform = ''; // عودة للوضع الأصلي (class .show)
+                    // العودة للوضع الطبيعي
+                    if (panel.classList.contains('show')) {
+                        panel.style.transform = ''; 
+                    }
                 }
                 
                 touchStartY = 0;
                 touchEndY = 0;
             });
 
-            // 2. النقر على المقبض يغلق البطاقة أيضاً
-            handle.addEventListener('click', closePanel);
-            
-            // 3. منع التمرير للخارج عندما يكون المحتوى في الأعلى
-            panel.addEventListener('scroll', function() {
-                if (panel.scrollTop === 0) {
-                    panel.style.overscrollBehavior = 'contain';
-                } else {
-                    panel.style.overscrollBehavior = 'auto';
+            // التعامل مع النقر على المقبض
+            handle.addEventListener('click', () => {
+                // إذا كانت مصغرة -> افتحها
+                if (panel.classList.contains('peek')) {
+                    panel.classList.remove('peek');
+                    panel.classList.add('show');
+                } 
+                // إذا كانت مفتوحة -> صغرها
+                else if (panel.classList.contains('show')) {
+                    closePanel();
                 }
             });
         }
