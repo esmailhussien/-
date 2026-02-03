@@ -395,7 +395,7 @@
 
         .results-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 16px;
             padding-bottom: 16px;
         }
@@ -578,7 +578,8 @@
         <div class="header-right">
             <div class="search-box">
                 <span class="material-symbols-outlined">search</span>
-                <input type="text" placeholder="ابحث عن إحداثيات أو منطقة...">
+                <input type="text" id="searchInput" placeholder="ابحث عن إحداثيات أو منطقة..." 
+                       onkeypress="if(event.key === 'Enter') searchLocation()">
             </div>
             <div class="user-avatar">م</div>
         </div>
@@ -608,8 +609,16 @@
         <div class="query-button-wrapper">
             <button id="queryBtn" class="query-btn" onclick="checkLocation()" disabled>
                 <span class="pulse-ring"></span>
-                <span class="material-symbols-outlined">location_searching</span>
+                <span class="material-symbols-outlined">gps_fixed</span>
                 <span id="btnText">جاري التحميل...</span>
+            </button>
+        </div>
+        
+        <!-- GET DATA BUTTON (appears after marker is moved) -->
+        <div id="getDataBtnWrapper" class="query-button-wrapper" style="display: none; margin-bottom: 12px;">
+            <button class="query-btn" onclick="getDataAtMarker()" style="background: linear-gradient(135deg, #1B5A9A 0%, #0B2F5C 100%); box-shadow: 0 8px 30px rgba(27, 90, 154, 0.3);">
+                <span class="material-symbols-outlined">search</span>
+                <span>الحصول على البيانات</span>
             </button>
         </div>
 
@@ -677,7 +686,7 @@
             const btn = document.getElementById('queryBtn');
             const btnText = document.getElementById('btnText');
             btn.disabled = false;
-            btnText.textContent = 'استعلام عن الموقع الحالي';
+            btnText.textContent = 'تحديد موقعي الحالي';
         }
 
         function hideLoadingOverlay() {
@@ -711,8 +720,74 @@
 
             currentMarker = L.marker(CONFIG.initialCenter, {
                 icon: customIcon,
-                draggable: false
+                draggable: true
             }).addTo(map);
+
+            // Enable click on map to place marker
+            map.on('click', function(e) {
+                currentMarker.setLatLng(e.latlng);
+                closePanel();
+                showGetDataButton();
+            });
+
+            // Enable marker drag
+            currentMarker.on('dragend', function() {
+                closePanel();
+                showGetDataButton();
+            });
+        }
+
+        // Search functionality
+        function searchLocation() {
+            const input = document.getElementById('searchInput');
+            const query = input.value.trim();
+            
+            if (!query) return;
+
+            // Check if input is coordinates (format: lat, lng or lat,lng)
+            const coordPattern = /^(-?\d+\.?\d*)[,\s]+(-?\d+\.?\d*)$/;
+            const match = query.match(coordPattern);
+            
+            if (match) {
+                const lat = parseFloat(match[1]);
+                const lng = parseFloat(match[2]);
+                
+                if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+                    map.setView([lat, lng], CONFIG.locationZoom);
+                    currentMarker.setLatLng([lat, lng]);
+                    showGetDataButton();
+                    closePanel();
+                } else {
+                    showError('إحداثيات غير صحيحة. يرجى التأكد من القيم.');
+                }
+            } else {
+                // Try to search by district name
+                if (geoData && geoData.features) {
+                    const found = geoData.features.find(feature => 
+                        feature.attributes["الحي"] && 
+                        feature.attributes["الحي"].includes(query)
+                    );
+                    
+                    if (found && found.geometry && found.geometry.rings) {
+                        // Calculate center of polygon
+                        const ring = found.geometry.rings[0];
+                        let sumLat = 0, sumLng = 0;
+                        ring.forEach(coord => {
+                            sumLng += coord[0];
+                            sumLat += coord[1];
+                        });
+                        const centerLat = sumLat / ring.length;
+                        const centerLng = sumLng / ring.length;
+                        
+                        map.setView([centerLat, centerLng], CONFIG.locationZoom);
+                        currentMarker.setLatLng([centerLat, centerLng]);
+                        showGetDataButton();
+                        closePanel();
+                    } else {
+                        showError('لم يتم العثور على الحي. جرب البحث بالإحداثيات (مثال: 31.2001, 29.9187)');
+                    }
+                }
+            }
         }
 
         // ============================================================
@@ -786,35 +861,98 @@
                 return;
             }
 
+            // Get current location via GPS
+            if (!navigator.geolocation) {
+                showError('المتصفح لا يدعم خاصية تحديد الموقع الجغرافي.');
+                return;
+            }
+
+            const btn = document.getElementById('queryBtn');
+            const btnText = document.getElementById('btnText');
+            
+            btnText.textContent = 'جاري تحديد الموقع...';
+            btn.disabled = true;
+
+            navigator.geolocation.getCurrentPosition(
+                (gpsPosition) => {
+                    const lat = gpsPosition.coords.latitude;
+                    const lng = gpsPosition.coords.longitude;
+                    
+                    // Update map and marker
+                    map.setView([lat, lng], CONFIG.locationZoom);
+                    currentMarker.setLatLng([lat, lng]);
+                    
+                    // Reset button
+                    btn.disabled = false;
+                    btnText.textContent = 'تحديد موقعي الحالي';
+                    
+                    // Show "Get Data" button
+                    showGetDataButton();
+                    
+                    // Close panel if open
+                    closePanel();
+                },
+                (error) => {
+                    btn.disabled = false;
+                    btnText.textContent = 'تحديد موقعي الحالي';
+                    
+                    let errorMessage = 'تعذر تحديد الموقع. ';
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMessage += 'يرجى السماح بالوصول إلى الموقع من إعدادات المتصفح.';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMessage += 'معلومات الموقع غير متاحة حالياً.';
+                            break;
+                        case error.TIMEOUT:
+                            errorMessage += 'انتهت مهلة الطلب. حاول مرة أخرى.';
+                            break;
+                        default:
+                            errorMessage += 'حدث خطأ غير معروف.';
+                    }
+                    showError(errorMessage);
+                }
+            );
+        }
+
+        // New function to get data at current marker position
+        function getDataAtMarker() {
+            if (!geoData || !geoData.features) {
+                showError('البيانات لم تتحمل بعد.');
+                return;
+            }
+
             const position = currentMarker.getLatLng();
             const userPoint = [position.lng, position.lat];
             
-            const btn = document.getElementById('queryBtn');
-            const btnText = document.getElementById('btnText');
-            const originalText = btnText.textContent;
+            let foundRegion = null;
             
-            btnText.textContent = 'جاري البحث...';
-            btn.disabled = true;
-
-            setTimeout(() => {
-                let foundRegion = null;
-                
-                for (const feature of geoData.features) {
-                    if (feature.geometry && feature.geometry.rings) {
-                        const polygonRings = feature.geometry.rings[0];
-                        if (isPointInPolygon(userPoint, polygonRings)) {
-                            foundRegion = feature.attributes;
-                            break;
-                        }
+            for (const feature of geoData.features) {
+                if (feature.geometry && feature.geometry.rings) {
+                    const polygonRings = feature.geometry.rings[0];
+                    if (isPointInPolygon(userPoint, polygonRings)) {
+                        foundRegion = feature.attributes;
+                        break;
                     }
                 }
-                
-                btn.disabled = false;
-                btnText.textContent = originalText;
-                
-                updateCoordinates(position);
-                showResult(foundRegion);
-            }, 600);
+            }
+            
+            updateCoordinates(position);
+            showResult(foundRegion);
+        }
+
+        // Show/hide "Get Data" button
+        function showGetDataButton() {
+            document.getElementById('getDataBtnWrapper').style.display = 'block';
+        }
+
+        function hideGetDataButton() {
+            document.getElementById('getDataBtnWrapper').style.display = 'none';
+        }
+
+        // New function to search at marker position (for search feature)
+        function searchAtMarkerPosition() {
+            showGetDataButton();
         }
 
         // ============================================================
@@ -831,21 +969,30 @@
             
             if (data) {
                 const districtName = data["الحي"] || "غير محدد";
-                let districtType = data["type"] || "غير معلوم";
+                const districtType = data["type"] || "غير معلوم";
                 
-                if (districtType === "غير معلوم") {
-                    districtType = "قيد التصنيف";
-                }
+                // Map type to Arabic classification
+                let classification = "غير محدد";
+                let classificationEn = "Unclassified";
                 
-                // Determine classification
-                let classification = "سكني";
-                let classificationEn = "Residential";
-                if (districtType.includes('تجار')) {
+                if (districtType.includes('اقتصادي')) {
+                    classification = "اقتصادي";
+                    classificationEn = "Economic";
+                } else if (districtType.includes('متوسط')) {
+                    classification = "متوسط";
+                    classificationEn = "Medium";
+                } else if (districtType.includes('مميز')) {
+                    classification = "مميز";
+                    classificationEn = "Premium";
+                } else if (districtType.includes('سكن')) {
+                    classification = "سكني";
+                    classificationEn = "Residential";
+                } else if (districtType.includes('تجار')) {
                     classification = "تجاري";
                     classificationEn = "Commercial";
-                } else if (districtType.includes('مختلط')) {
-                    classification = "مختلط";
-                    classificationEn = "Mixed Use";
+                } else if (districtType !== "غير معلوم") {
+                    classification = districtType;
+                    classificationEn = "Custom";
                 }
                 
                 grid.innerHTML = `
@@ -868,17 +1015,6 @@
                         <div class="card-content">
                             <div class="card-value">${classification}</div>
                             <div class="card-value-ar">${classificationEn}</div>
-                        </div>
-                    </div>
-                    
-                    <div class="result-card">
-                        <div class="card-header">
-                            <span class="material-symbols-outlined">architecture</span>
-                            <span class="card-label">الكثافة</span>
-                        </div>
-                        <div class="card-content">
-                            <div class="card-value">كثافة عالية</div>
-                            <div class="card-value-ar">High Density</div>
                         </div>
                     </div>
                     
