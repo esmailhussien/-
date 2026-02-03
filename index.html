@@ -308,46 +308,76 @@
             }
         }
 
-        /* ========== RESULT PANEL ========== */
+        /* ========== RESULT PANEL (MODERN BOTTOM SHEET) ========== */
         .result-panel {
             pointer-events: auto;
             width: 100%;
-            max-width: 1024px;
+            max-width: 600px; /* عرض مناسب للشاشات الكبيرة */
+            margin: 0 auto; /* توسيط */
             background: white;
             border-radius: 24px 24px 0 0;
-            box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.15);
             border-top: 1px solid rgba(0,0,0,0.05);
-            padding: 24px;
-            transform: translateY(100%);
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            touch-action: pan-y;
+            
+            /* الخصائص الجديدة للمرونة */
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            max-height: 85vh; /* أقصى ارتفاع 85% من الشاشة */
+            height: auto;
+            overflow-y: auto; /* تفعيل السكرول داخل البطاقة */
+            
+            transform: translateY(105%); /* مخفي للأسفل */
+            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1); /* حركة فيزيائية ناعمة */
+            z-index: 1000;
+            padding-bottom: 30px; /* مساحة أمان في الأسفل */
         }
 
         .result-panel.show {
             transform: translateY(0);
         }
 
-        .panel-handle {
-            width: 48px;
-            height: 6px;
-            background: #e5e7eb;
-            border-radius: 3px;
-            margin: 0 auto 24px;
-            cursor: pointer;
-            transition: background 0.2s ease;
-        }
-
-        .panel-handle:hover {
-            background: #d1d5db;
-        }
-
-        .panel-header {
+        /* مقبض السحب */
+        .panel-handle-area {
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 20;
+            padding: 12px 0 8px 0;
+            cursor: grab;
             display: flex;
-            align-items: flex-start;
+            justify-content: center;
+            border-bottom: 1px solid transparent;
+        }
+
+        .panel-handle {
+            width: 40px;
+            height: 5px;
+            background: #e5e7eb;
+            border-radius: 100px;
+            transition: background 0.2s;
+        }
+
+        .panel-handle-area:active .panel-handle {
+            background: var(--primary);
+            width: 50px;
+        }
+
+        /* تثبيت رأس القائمة (زر الطباعة والعنوان) */
+        .panel-header {
+            position: sticky; /* تثبيت العنصر */
+            top: 25px; /* المسافة من الأعلى (بعد المقبض) */
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(5px);
+            z-index: 15;
+            display: flex;
+            align-items: center;
             justify-content: space-between;
-            gap: 24px;
+            gap: 16px;
+            padding: 0 24px 16px 24px;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
             margin-bottom: 16px;
-            flex-wrap: wrap;
         }
 
         .panel-info {
@@ -376,22 +406,23 @@
         }
 
         .panel-title {
-            font-size: 24px;
+            font-size: 18px;
             font-weight: 700;
             color: var(--text-primary);
+            margin-top: 4px;
         }
 
         .export-btn {
             display: flex;
             align-items: center;
-            gap: 8px;
-            padding: 12px 24px;
+            gap: 6px;
+            padding: 8px 16px;
             background: var(--primary);
             color: var(--text-primary);
             border: none;
             border-radius: 12px;
             font-family: 'Cairo', sans-serif;
-            font-size: 14px;
+            font-size: 12px;
             font-weight: 700;
             cursor: pointer;
             transition: all 0.2s ease;
@@ -400,6 +431,11 @@
         .export-btn:hover {
             opacity: 0.9;
             transform: translateY(-1px);
+        }
+
+        /* تحسين المحتوى */
+        .results-grid, .rent-calculator {
+            padding: 0 24px;
         }
 
         .results-grid {
@@ -453,6 +489,111 @@
 
         .card-value.success {
             color: #059669;
+        }
+
+        /* ========== RENT CALCULATOR STYLES ========== */
+        .rent-calculator {
+            margin-top: 24px;
+            border-top: 1px dashed #ccc;
+            padding-top: 20px;
+        }
+
+        .calc-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .rent-input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 14px;
+            outline: none;
+            transition: border 0.3s;
+        }
+
+        .rent-input:focus {
+            border-color: var(--primary);
+        }
+
+        .calc-btn {
+            background: var(--text-primary);
+            color: white;
+            border: none;
+            padding: 0 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+            font-weight: bold;
+        }
+
+        .calc-results {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid #e2e8f0;
+            display: none;
+        }
+
+        .calc-results.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+        }
+
+        .result-row:last-child {
+            border-bottom: none;
+        }
+
+        .result-row.total {
+            font-weight: 700;
+            color: var(--primary-dark);
+            font-size: 16px;
+            border-top: 2px solid #ddd;
+            margin-top: 8px;
+            padding-top: 12px;
+        }
+
+        .year-badge {
+            background: #e2e8f0;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            color: #475569;
+        }
+
+        /* إخفاء شريط التمرير المزعج */
+        .result-panel::-webkit-scrollbar {
+            width: 6px;
+        }
+        .result-panel::-webkit-scrollbar-thumb {
+            background-color: rgba(0,0,0,0.1);
+            border-radius: 3px;
         }
 
         /* ========== LOADING OVERLAY ========== */
@@ -538,11 +679,28 @@
             }
 
             .result-panel {
-                padding: 20px 16px;
+                max-width: 100%;
+                border-radius: 20px 20px 0 0;
             }
 
             .results-grid {
                 grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+
+            .input-group {
+                flex-direction: column;
+            }
+
+            .calc-btn {
+                padding: 12px;
+            }
+
+            .panel-header {
+                padding: 0 16px 12px 16px;
+            }
+
+            .results-grid, .rent-calculator {
+                padding: 0 16px;
             }
         }
 
@@ -630,29 +788,30 @@
                 <span>الحصول على البيانات</span>
             </button>
         </div>
+    </div>
 
-        <!-- RESULT PANEL -->
-        <div id="resultPanel" class="result-panel">
-            <div class="panel-handle" onclick="closePanel()" title="اضغط للإغلاق"></div>
-            <div class="panel-header">
-                <div class="panel-info">
-                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                        <span class="status-badge">
-                            موقع نشط
-                        </span>
-                        <span class="coordinates" id="coordinates">--</span>
-                    </div>
-                    <h3 class="panel-title">نتائج الاستعلام الإداري</h3>
+    <!-- RESULT PANEL -->
+    <div id="resultPanel" class="result-panel">
+        <div class="panel-handle-area" id="dragHandle">
+            <div class="panel-handle"></div>
+        </div>
+
+        <div class="panel-header">
+            <div class="panel-info">
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <span class="status-badge">موقع نشط</span>
+                    <span class="coordinates" id="coordinates">--</span>
                 </div>
-                <button class="export-btn" onclick="exportReport()">
-                    <span class="material-symbols-outlined">file_download</span>
-                    تصدير التقرير
-                </button>
+                <h3 class="panel-title">نتائج الاستعلام</h3>
             </div>
-            
-            <div id="resultsGrid" class="results-grid">
-                <!-- Cards will be inserted here -->
-            </div>
+            <button class="export-btn" onclick="exportReport()">
+                <span class="material-symbols-outlined" style="font-size: 18px;">print</span>
+                طباعة
+            </button>
+        </div>
+        
+        <div id="resultsGrid" class="results-grid">
+            <!-- Cards will be inserted here -->
         </div>
     </div>
 
@@ -670,6 +829,7 @@
 
         let map = null;
         let currentMarker = null;
+        let currentDistrictType = "";
 
         // ============================================================
         // DATA LOADING & API
@@ -986,30 +1146,31 @@
                 const districtName = data.district || "غير محدد";
                 const districtType = data.type || "غير معلوم";
                 
-                // Map type to Arabic classification
+                // حفظ النوع لاستخدامه في الحساب
+                currentDistrictType = districtType;
+
+                // تحديد التصنيف للعرض
                 let classification = "غير محدد";
                 let classificationEn = "Unclassified";
                 
-                if (districtType.includes('اقتصادي')) {
-                    classification = "اقتصادي";
+                if (districtType.includes('اقتصادي') || districtType.includes('شعبي')) {
+                    classification = "اقتصادي (شعبي)";
                     classificationEn = "Economic";
                 } else if (districtType.includes('متوسط')) {
                     classification = "متوسط";
                     classificationEn = "Medium";
-                } else if (districtType.includes('مميز')) {
+                } else if (districtType.includes('مميز') || districtType.includes('راقي')) {
                     classification = "مميز";
                     classificationEn = "Premium";
                 } else if (districtType.includes('سكن')) {
                     classification = "سكني";
                     classificationEn = "Residential";
-                } else if (districtType.includes('تجار')) {
-                    classification = "تجاري";
-                    classificationEn = "Commercial";
-                } else if (districtType !== "غير معلوم") {
+                } else {
                     classification = districtType;
                     classificationEn = "Custom";
                 }
                 
+                // بناء واجهة النتائج + الآلة الحاسبة
                 grid.innerHTML = `
                     <div class="result-card">
                         <div class="card-header">
@@ -1018,7 +1179,6 @@
                         </div>
                         <div class="card-content">
                             <div class="card-value">حي ${districtName}</div>
-                            <div class="card-value-ar">District</div>
                         </div>
                     </div>
                     
@@ -1040,21 +1200,135 @@
                         </div>
                         <div class="card-content">
                             <div class="card-value success">مطابق</div>
-                            <div class="card-value-ar">Compliant</div>
+                        </div>
+                    </div>
+
+                    <div class="rent-calculator" style="grid-column: 1 / -1;">
+                        <div class="calc-title">
+                            <span class="material-symbols-outlined">calculate</span>
+                            حاسبة الإيجار القديم
+                        </div>
+                        <div style="font-size: 12px; color: #666; margin-bottom: 10px;">
+                            أدخل القيمة الإيجارية الحالية (في العقد) لحساب الزيادة القانونية المقررة لهذه المنطقة (${classification}).
+                        </div>
+                        
+                        <div class="input-group">
+                            <input type="number" id="currentRentInput" class="rent-input" placeholder="القيمة الحالية (جنية)" onkeypress="if(event.key === 'Enter') calculateRent()">
+                            <button class="calc-btn" onclick="calculateRent()">احسب</button>
+                        </div>
+
+                        <div id="calcOutput" class="calc-results">
                         </div>
                     </div>
                 `;
             } else {
+                // حالة عدم العثور على نتائج
                 grid.innerHTML = `
                     <div class="not-found" style="grid-column: 1 / -1;">
                         <div class="not-found-icon">📍</div>
                         <div class="not-found-text">الموقع خارج نطاق التغطية</div>
-                        <div class="not-found-hint">الموقع المحدد غير متاح في قاعدة البيانات حالياً</div>
+                        <div class="not-found-hint">يرجى التأكد من اختيار موقع داخل حدود الأحياء المسجلة</div>
                     </div>
                 `;
             }
             
             panel.classList.add('show');
+        }
+
+        // ============================================================
+        // RENT CALCULATION LOGIC
+        // ============================================================
+        function calculateRent() {
+            const input = document.getElementById('currentRentInput');
+            const output = document.getElementById('calcOutput');
+            const currentRent = parseFloat(input.value);
+
+            if (!currentRent || currentRent <= 0) {
+                alert("يرجى إدخال قيمة إيجارية صحيحة");
+                return;
+            }
+
+            // إعدادات الحساب بناءً على نوع المنطقة
+            let multiplier = 10; // الافتراضي
+            let minRent = 250;   // الافتراضي
+            let typeName = "";
+
+            // منطق القانون المصري الجديد
+            if (currentDistrictType.includes('مميز') || currentDistrictType.includes('راقي')) {
+                multiplier = 20;
+                minRent = 1000;
+                typeName = "منطقة متميزة";
+            } else if (currentDistrictType.includes('متوسط')) {
+                multiplier = 10;
+                minRent = 400;
+                typeName = "منطقة متوسطة";
+            } else {
+                // اقتصادي / شعبي / أو غير محدد
+                multiplier = 10;
+                minRent = 250;
+                typeName = "منطقة اقتصادية";
+            }
+
+            // 1. حساب القيمة المبدئية (عدد الأضعاف)
+            let calculatedBase = currentRent * multiplier;
+            
+            // 2. تطبيق الحد الأدنى
+            let finalBaseRent = Math.max(calculatedBase, minRent);
+            let appliedRule = (calculatedBase < minRent) ? "تطبيق الحد الأدنى" : `${multiplier} أضعاف القيمة`;
+
+            // 3. حساب الزيادة السنوية (15%) للسنوات الخمس القادمة
+            let year1 = finalBaseRent;
+            let year2 = year1 * 1.15;
+            let year3 = year2 * 1.15;
+            let year4 = year3 * 1.15;
+            let year5 = year4 * 1.15;
+
+            // عرض النتائج
+            output.innerHTML = `
+                <div style="border-bottom: 1px dashed #ccc; padding-bottom: 10px; margin-bottom: 10px;">
+                    <div class="result-row">
+                        <span>نوع المنطقة المطبق:</span>
+                        <strong>${typeName}</strong>
+                    </div>
+                    <div class="result-row">
+                        <span>القيمة الحالية:</span>
+                        <span>${currentRent.toFixed(0)} ج.م</span>
+                    </div>
+                    <div class="result-row">
+                        <span>معادلة الحساب:</span>
+                        <span>${appliedRule} (${multiplier}x)</span>
+                    </div>
+                </div>
+
+                <div style="font-weight: bold; margin-bottom: 8px; font-size: 13px;">تدرج القيمة الإيجارية (زيادة 15% سنوياً):</div>
+                
+                <div class="result-row">
+                    <span><span class="year-badge">السنة 1</span> الإيجار الجديد</span>
+                    <strong style="color: #059669">${Math.round(year1)} ج.م</strong>
+                </div>
+                <div class="result-row">
+                    <span><span class="year-badge">السنة 2</span></span>
+                    <span>${Math.round(year2)} ج.م</span>
+                </div>
+                <div class="result-row">
+                    <span><span class="year-badge">السنة 3</span></span>
+                    <span>${Math.round(year3)} ج.م</span>
+                </div>
+                <div class="result-row">
+                    <span><span class="year-badge">السنة 4</span></span>
+                    <span>${Math.round(year4)} ج.م</span>
+                </div>
+                <div class="result-row">
+                    <span><span class="year-badge">السنة 5</span></span>
+                    <span>${Math.round(year5)} ج.م</span>
+                </div>
+                
+                <div style="font-size: 10px; color: #888; margin-top: 10px; text-align: center;">
+                    * الأرقام تقريبية (جبر الكسور) لأقرب جنيه صحيح.
+                </div>
+            `;
+
+            output.classList.add('show');
         }
 
         function closePanel() {
@@ -1066,61 +1340,85 @@
         }
 
         function exportReport() {
-            alert('سيتم تنفيذ وظيفة تصدير التقرير قريباً');
+            // التحقق من وجود نتائج
+            const districtElem = document.querySelector('#resultsGrid .result-card:nth-child(1) .card-value');
+            if (!districtElem) {
+                showError('يرجى إجراء استعلام وتحديد موقع أولاً.');
+                return;
+            }
+
+            // انشاء نافذة طباعة مخصصة
+            // ملاحظة: بما ان القالب غير موجود في HTML، سنقوم بإنشائه ديناميكياً هنا
+            // أو يمكنك إعادة لصق كود HTML/CSS الخاص بالطباعة الذي أرسلته لك سابقاً
+            
+            // الحل الأسرع: طباعة الشاشة الحالية بعد تحسينها
+            window.print();
         }
 
         // ============================================================
-        // SWIPE TO CLOSE PANEL (Mobile Support)
+        // SMART SWIPE LOGIC (Scroll vs Drag)
         // ============================================================
-        let touchStartY = 0;
-        let touchEndY = 0;
-        let isDragging = false;
-
         function initPanelSwipe() {
             const panel = document.getElementById('resultPanel');
-            const handle = panel.querySelector('.panel-handle');
+            const handle = document.getElementById('dragHandle'); // منطقة المقبض فقط
 
-            // Touch events for mobile
-            panel.addEventListener('touchstart', (e) => {
+            let touchStartY = 0;
+            let touchEndY = 0;
+            let isDragging = false;
+            const DRAG_THRESHOLD = 100; // المسافة المطلوبة للإغلاق
+
+            // 1. السحب من "المقبض" فقط يقوم بتحريك البطاقة
+            handle.addEventListener('touchstart', (e) => {
                 touchStartY = e.touches[0].clientY;
                 isDragging = true;
+                panel.style.cursor = 'grabbing';
             }, { passive: true });
 
-            panel.addEventListener('touchmove', (e) => {
+            handle.addEventListener('touchmove', (e) => {
                 if (!isDragging) return;
                 
                 touchEndY = e.touches[0].clientY;
                 const deltaY = touchEndY - touchStartY;
                 
-                // Only allow dragging down
+                // السماح بالسحب للأسفل فقط
                 if (deltaY > 0) {
-                    const translateY = Math.min(deltaY, 400);
-                    panel.style.transform = `translateY(${translateY}px)`;
-                    panel.style.transition = 'none';
+                    e.preventDefault(); // منع السكرول أثناء سحب المقبض
+                    panel.style.transform = `translateY(${deltaY}px)`;
+                    panel.style.transition = 'none'; // إزالة الحركة الناعمة أثناء السحب اليدوي
                 }
-            }, { passive: true });
+            }, { passive: false }); // passive: false مهم لعمل preventDefault
 
-            panel.addEventListener('touchend', () => {
+            handle.addEventListener('touchend', () => {
                 if (!isDragging) return;
                 isDragging = false;
+                panel.style.cursor = '';
                 
                 const deltaY = touchEndY - touchStartY;
                 
-                // If dragged down more than 100px, close the panel
-                if (deltaY > 100) {
-                    closePanel();
+                // إعادة تفعيل الحركة الناعمة
+                panel.style.transition = 'transform 0.4s cubic-bezier(0.25, 1, 0.5, 1)';
+                
+                if (deltaY > DRAG_THRESHOLD) {
+                    closePanel(); // إغلاق إذا سحب مسافة كافية
                 } else {
-                    // Reset to original position
-                    panel.style.transform = 'translateY(0)';
+                    panel.style.transform = ''; // عودة للوضع الأصلي (class .show)
                 }
                 
-                panel.style.transition = 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
                 touchStartY = 0;
                 touchEndY = 0;
             });
 
-            // Click on handle to close
+            // 2. النقر على المقبض يغلق البطاقة أيضاً
             handle.addEventListener('click', closePanel);
+            
+            // 3. منع التمرير للخارج عندما يكون المحتوى في الأعلى
+            panel.addEventListener('scroll', function() {
+                if (panel.scrollTop === 0) {
+                    panel.style.overscrollBehavior = 'contain';
+                } else {
+                    panel.style.overscrollBehavior = 'auto';
+                }
+            });
         }
 
         // ============================================================
