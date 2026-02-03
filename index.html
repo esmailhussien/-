@@ -3,299 +3,905 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>محافظة الإسكندرية - الاستعلام المكاني</title>
+    <title>الاستعلام المكاني | محافظة الإسكندرية</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --primary-color: #1A3C6B;
-            --accent-color: #2ECC71;
-            --bg-color: #F8F9FA;
-            --text-dark: #2c3e50;
+            --gov-navy: #0B2F5C;
+            --gov-blue: #1B5A9A;
+            --alex-sea: #0984D1;
+            --success-green: #0F9B5D;
+            --warning-amber: #F59E0B;
+            --text-primary: #1F2937;
+            --text-secondary: #6B7280;
+            --bg-light: #F8FAFC;
+            --white: #FFFFFF;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 30px rgba(0,0,0,0.15);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 20px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Tajawal', sans-serif;
-            background-color: var(--bg-color);
+            font-family: 'Cairo', sans-serif;
+            background: var(--bg-light);
             height: 100vh;
             display: flex;
             flex-direction: column;
+            overflow: hidden;
+            position: relative;
         }
 
-        .header {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 15px 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        /* ========== HEADER ========== */
+        .gov-header {
+            background: linear-gradient(135deg, var(--gov-navy) 0%, var(--gov-blue) 100%);
+            color: var(--white);
+            padding: 20px 24px;
+            box-shadow: var(--shadow-lg);
+            position: relative;
             z-index: 1000;
+        }
+
+        .header-content {
             display: flex;
             align-items: center;
+            gap: 16px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .gov-logo {
+            width: 56px;
+            height: 56px;
+            background: var(--white);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--gov-navy);
+            box-shadow: var(--shadow-md);
+            flex-shrink: 0;
+        }
+
+        .header-text h1 {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            letter-spacing: -0.3px;
+        }
+
+        .header-text p {
+            font-size: 14px;
+            opacity: 0.9;
+            font-weight: 400;
+        }
+
+        /* ========== MAP CONTAINER ========== */
+        .map-wrapper {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+            background: var(--bg-light);
+        }
+
+        /* ========== GPS STATUS OVERLAY ========== */
+        .gps-overlay {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 500;
+            background: var(--white);
+            padding: 12px 24px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            opacity: 0;
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+
+        .gps-overlay.show {
+            opacity: 1;
+        }
+
+        .gps-pulse {
+            width: 12px;
+            height: 12px;
+            background: var(--success-green);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.6; }
+        }
+
+        .gps-text {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* ========== LOCATION BUTTON ========== */
+        .location-btn {
+            position: absolute;
+            bottom: 140px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            background: var(--white);
+            border: none;
+            border-radius: 50%;
+            box-shadow: var(--shadow-lg);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            transition: all 0.3s ease;
+            z-index: 500;
+        }
+
+        .location-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.2);
+        }
+
+        .location-btn:active {
+            transform: scale(0.95);
+        }
+
+        .location-btn.loading {
+            animation: rotate 1s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* ========== MAIN BUTTON ========== */
+        .action-panel {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, var(--white) 0%, var(--white) 85%, transparent 100%);
+            padding: 24px 20px 32px;
+            z-index: 500;
+            pointer-events: none;
+        }
+
+        .check-btn {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            display: block;
+            background: linear-gradient(135deg, var(--success-green) 0%, #0D8551 100%);
+            color: var(--white);
+            border: none;
+            padding: 18px 32px;
+            border-radius: var(--radius-lg);
+            font-size: 18px;
+            font-weight: 700;
+            font-family: 'Cairo', sans-serif;
+            cursor: pointer;
+            box-shadow: var(--shadow-lg);
+            transition: all 0.3s ease;
+            pointer-events: auto;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .check-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .check-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .check-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 40px rgba(15, 155, 93, 0.4);
+        }
+
+        .check-btn:active {
+            transform: translateY(0);
+        }
+
+        .check-btn:disabled {
+            background: linear-gradient(135deg, #9CA3AF 0%, #6B7280 100%);
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .btn-content {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             gap: 10px;
         }
 
-        .header h1 { margin: 0; font-size: 1.2rem; font-weight: 700; }
-
-        #map {
-            flex-grow: 1;
-            width: 100%;
-            z-index: 1;
-            cursor: crosshair; /* تغيير شكل المؤشر ليوحي بإمكانية النقر */
+        .btn-spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top-color: var(--white);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: none;
         }
 
-        /* تم إزالة تنسيقات الدبوس الثابت القديم (.center-marker) */
-
-        .action-container {
-            position: absolute;
-            bottom: 30px;
-            left: 0;
-            right: 0;
-            padding: 0 20px;
-            z-index: 1000;
-            display: flex;
-            justify-content: center;
+        .check-btn.loading .btn-spinner {
+            display: block;
         }
 
-        .btn-check {
-            background-color: var(--accent-color);
-            color: white;
-            border: none;
-            padding: 15px 40px;
-            border-radius: 50px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            font-family: 'Tajawal', sans-serif;
-            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
-            cursor: pointer;
-            transition: transform 0.2s;
-            width: 100%;
-            max-width: 400px;
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
-        .btn-check:active { transform: scale(0.98); }
-
+        /* ========== RESULT MODAL ========== */
         .result-modal {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            background: white;
-            padding: 25px;
-            border-radius: 20px 20px 0 0;
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.15);
+            background: var(--white);
+            border-radius: 24px 24px 0 0;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.2);
             z-index: 2000;
-            transform: translateY(110%);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            max-height: 70vh;
+            overflow-y: auto;
         }
 
-        .result-modal.show { transform: translateY(0); }
+        .result-modal.show {
+            transform: translateY(0);
+        }
 
-        .result-header {
+        .modal-handle {
+            width: 40px;
+            height: 4px;
+            background: #E5E7EB;
+            border-radius: 2px;
+            margin: 12px auto 20px;
+        }
+
+        .modal-header {
+            padding: 0 24px 20px;
+            border-bottom: 2px solid #F3F4F6;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 10px;
         }
 
-        .result-title { font-size: 1.1rem; color: var(--primary-color); font-weight: bold; }
-        .close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #999; }
-
-        .info-row {
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--gov-navy);
             display: flex;
             align-items: center;
-            margin-bottom: 15px;
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 10px;
+            gap: 8px;
         }
 
-        .info-icon { font-size: 1.5rem; margin-left: 15px; }
-        .info-label { font-size: 0.9rem; color: #7f8c8d; display: block; margin-bottom: 3px;}
-        .info-value { font-size: 1.1rem; color: var(--text-dark); font-weight: bold; }
-
-        /* تنسيق بسيط للحالة (لون فقط بدون نص إضافي) */
-        .status-dot {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
+        .close-btn {
+            width: 36px;
+            height: 36px;
+            background: #F3F4F6;
+            border: none;
             border-radius: 50%;
-            margin-right: 8px;
+            font-size: 20px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .bg-green { background-color: #2e7d32; }
-        .bg-blue { background-color: #1976d2; }
-        .bg-purple { background-color: #7b1fa2; }
 
+        .close-btn:hover {
+            background: #E5E7EB;
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .info-card {
+            background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            margin-bottom: 16px;
+            border-right: 4px solid var(--alex-sea);
+            transition: all 0.3s ease;
+        }
+
+        .info-card:hover {
+            transform: translateX(-4px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .info-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .info-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--white);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .info-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--gov-navy);
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        .status-badge.residential {
+            background: rgba(15, 155, 93, 0.15);
+            color: var(--success-green);
+        }
+
+        .status-badge.commercial {
+            background: rgba(9, 132, 209, 0.15);
+            color: var(--alex-sea);
+        }
+
+        .status-badge.mixed {
+            background: rgba(124, 58, 237, 0.15);
+            color: #7C3AED;
+        }
+
+        .status-badge.unknown {
+            background: rgba(107, 114, 128, 0.15);
+            color: var(--text-secondary);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: pulse 2s infinite;
+        }
+
+        .not-found {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .not-found-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .not-found-text {
+            font-size: 18px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .not-found-hint {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* ========== LOADING OVERLAY ========== */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.95);
+            z-index: 3000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        .loading-overlay.hide {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loader {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #E5E7EB;
+            border-top-color: var(--gov-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .loading-text {
+            font-size: 16px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 640px) {
+            .gov-header {
+                padding: 16px 20px;
+            }
+
+            .gov-logo {
+                width: 48px;
+                height: 48px;
+                font-size: 24px;
+            }
+
+            .header-text h1 {
+                font-size: 18px;
+            }
+
+            .header-text p {
+                font-size: 12px;
+            }
+
+            .check-btn {
+                font-size: 16px;
+                padding: 16px 28px;
+            }
+
+            .location-btn {
+                bottom: 120px;
+                width: 50px;
+                height: 50px;
+                font-size: 22px;
+            }
+        }
+
+        /* ========== CUSTOM LEAFLET STYLES ========== */
+        .leaflet-control-attribution {
+            font-size: 10px;
+            background: rgba(255,255,255,0.8) !important;
+        }
+
+        .leaflet-control-zoom {
+            border: none !important;
+            box-shadow: var(--shadow-md) !important;
+        }
+
+        .leaflet-control-zoom a {
+            border: none !important;
+            background: var(--white) !important;
+            color: var(--gov-navy) !important;
+            width: 36px !important;
+            height: 36px !important;
+            line-height: 36px !important;
+            font-size: 20px !important;
+            font-weight: 700 !important;
+        }
+
+        .leaflet-control-zoom a:hover {
+            background: var(--bg-light) !important;
+        }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <div style="width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--primary-color);">م</div>
-        <div>
-            <h1>محافظة الإسكندرية</h1>
-            <span style="font-size: 0.8rem; opacity: 0.9;">بوابة الاستعلام المكاني</span>
-        </div>
+    <!-- LOADING OVERLAY -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loader"></div>
+        <div class="loading-text">جاري تحميل البيانات...</div>
     </div>
 
-    <div id="map"></div>
-
-    <div class="action-container">
-        <button class="btn-check" onclick="checkLocation()">تحديد المنطقة</button>
-    </div>
-
-    <div id="resultModal" class="result-modal">
-        <div class="result-header">
-            <span class="result-title">نتيجة الاستعلام</span>
-            <button class="close-btn" onclick="closeModal()">&times;</button>
-        </div>
-        
-        <div class="info-row">
-            <div class="info-icon">📍</div>
-            <div>
-                <span class="info-label">الحي التابع</span>
-                <span class="info-value" id="districtName">--</span>
+    <!-- HEADER -->
+    <div class="gov-header">
+        <div class="header-content">
+            <div class="gov-logo">م</div>
+            <div class="header-text">
+                <h1>محافظة الإسكندرية</h1>
+                <p>بوابة الاستعلام المكاني الإلكترونية</p>
             </div>
         </div>
+    </div>
 
-        <div class="info-row">
-            <div class="info-icon">🏘️</div>
-            <div>
-                <span class="info-label">نوع المنطقة</span>
-                <div style="display: flex; align-items: center;">
-                    <span id="statusDot" class="status-dot"></span>
-                    <span class="info-value" id="districtType">--</span>
+    <!-- GPS STATUS -->
+    <div id="gpsOverlay" class="gps-overlay">
+        <div class="gps-pulse"></div>
+        <div class="gps-text">تم تحديد موقعك الحالي</div>
+    </div>
+
+    <!-- MAP -->
+    <div class="map-wrapper">
+        <div id="map"></div>
+        
+        <!-- LOCATION BUTTON -->
+        <button id="locationBtn" class="location-btn" title="تحديد موقعي الحالي">
+            📍
+        </button>
+
+        <!-- ACTION PANEL -->
+        <div class="action-panel">
+            <button id="checkBtn" class="check-btn" disabled>
+                <div class="btn-content">
+                    <div class="btn-spinner"></div>
+                    <span id="btnText">جاري التحميل...</span>
                 </div>
+            </button>
+        </div>
+    </div>
+
+    <!-- RESULT MODAL -->
+    <div id="resultModal" class="result-modal">
+        <div class="modal-handle"></div>
+        <div class="modal-header">
+            <div class="modal-title">
+                <span>📋</span>
+                <span>نتيجة الاستعلام</span>
             </div>
+            <button class="close-btn" onclick="closeModal()">×</button>
         </div>
-        
+        <div class="modal-body" id="modalBody">
+            <!-- Will be filled dynamically -->
         </div>
+    </div>
 
     <script>
-        // 1. البيانات (للمحاكاة)
-        const geoData = {
-            "features": [
-                 {"attributes":{"FID":0,"الحي":"شرق","type":"اقتصادية"},"geometry":{"rings":[[[30.052622,31.184940],[30.052972,31.184622],[30.050795,31.182809],[30.048439,31.180760],[30.029899,31.173005],[29.995518,31.162961],[29.995039,31.180458],[29.996257,31.184936],[30.052622,31.184940]]]}},
-                 {"attributes":{"FID":1,"الحي":"شرق","type":"سكنية"},"geometry":{"rings":[[[29.994560,31.205895],[29.994336,31.209127],[30.007596,31.211721],[30.015793,31.206988],[30.035072,31.198364],[30.021116,31.201194],[29.994560,31.205895]]]}},
-            ]
+        // ============================================================
+        // CONFIGURATION
+        // ============================================================
+        const CONFIG = {
+            dataUrl: 'https://gist.githubusercontent.com/esmailhussien/d15d088e30bbe594bbea6abf46341e2c/raw/0dd51d9f27e0ea3a3da4da9aa73771be163994ba/sharq.json',
+            initialCenter: [31.215, 29.960],
+            initialZoom: 13,
+            locationZoom: 16
         };
 
-        // 2. إعداد الخريطة
-        const initialCoords = [31.2001, 29.9600];
-        const map = L.map('map', { zoomControl: false }).setView(initialCoords, 13);
-        
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-            attribution: '© OpenStreetMap'
-        }).addTo(map);
+        let geoData = null;
+        let map = null;
+        let currentMarker = null;
+        let userLocation = null;
 
-        // 3. إنشاء الدبوس القابل للتحريك (Draggable Marker)
-        // هذا هو التغيير الرئيسي: الدبوس الآن عنصر في الخريطة وليس طبقة CSS فوقها
-        const markerIcon = L.icon({
-            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-            iconSize: [25, 41],
-            iconAnchor: [12, 41],
-            popupAnchor: [1, -34],
-            shadowSize: [41, 41]
-        });
-
-        const mainMarker = L.marker(initialCoords, {
-            draggable: true, // تفعيل السحب
-            icon: markerIcon
-        }).addTo(map);
-
-        // تحديث الدبوس عند النقر في أي مكان على الخريطة
-        map.on('click', function(e) {
-            mainMarker.setLatLng(e.latlng);
-            closeModal(); // إغلاق النتيجة إذا غير المكان
-        });
-
-        // إغلاق النتيجة عند سحب الدبوس
-        mainMarker.on('dragstart', function() {
-            closeModal();
-        });
-
-        // 4. خوارزمية النقطة داخل المضلع
-        function isPointInPolygon(point, vs) {
-            var x = point[0], y = point[1];
-            var inside = false;
-            for (var i = 0, j = vs.length - 1; i < vs.length; j = i++) {
-                var xi = vs[i][0], yi = vs[i][1];
-                var xj = vs[j][0], yj = vs[j][1];
-                var intersect = ((yi > y) != (yj > y)) &&
-                    (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
-                if (intersect) inside = !inside;
+        // ============================================================
+        // DATA LOADING
+        // ============================================================
+        async function loadGeoData() {
+            try {
+                const response = await fetch(CONFIG.dataUrl);
+                if (!response.ok) throw new Error('فشل تحميل البيانات');
+                
+                geoData = await response.json();
+                console.log('✅ تم تحميل بيانات المناطق بنجاح');
+                
+                enableCheckButton();
+                hideLoadingOverlay();
+                
+            } catch (error) {
+                console.error('❌ خطأ في تحميل البيانات:', error);
+                showError('تعذر تحميل بيانات المناطق. يرجى التحقق من الاتصال بالإنترنت والمحاولة مرة أخرى.');
             }
-            return inside;
         }
 
-        // 5. وظيفة التحقق
-        async function checkLocation() {
-            // الآن نأخذ الإحداثيات من الدبوس (Marker) وليس من مركز الخريطة
-            const position = mainMarker.getLatLng();
-            const userPoint = [position.lng, position.lat]; 
-            
-            document.querySelector('.btn-check').textContent = 'جاري التحقق...';
-            document.querySelector('.btn-check').style.opacity = '0.8';
+        function enableCheckButton() {
+            const btn = document.getElementById('checkBtn');
+            const btnText = document.getElementById('btnText');
+            btn.disabled = false;
+            btn.classList.remove('loading');
+            btnText.textContent = 'استعلام عن الموقع';
+        }
 
+        function hideLoadingOverlay() {
             setTimeout(() => {
-                let foundRegion = null;
-
-                // محاكاة النتيجة (Demo Logic)
-                if (position.lat > 31.18 && position.lat < 31.23 && position.lng > 29.93 && position.lng < 30.00) {
-                     foundRegion = { "الحي": "شرق", "type": "سكنية مميزة" };
-                } else if (position.lat > 31.16 && position.lat <= 31.18) {
-                     foundRegion = { "الحي": "شرق", "type": "اقتصادية" };
-                }
-
-                showResult(foundRegion);
-                
-                document.querySelector('.btn-check').textContent = 'تحديد المنطقة';
-                document.querySelector('.btn-check').style.opacity = '1';
+                document.getElementById('loadingOverlay').classList.add('hide');
             }, 500);
         }
 
-        function showResult(data) {
-            const modal = document.getElementById('resultModal');
-            const distName = document.getElementById('districtName');
-            const distType = document.getElementById('districtType');
-            const statusDot = document.getElementById('statusDot');
+        // ============================================================
+        // MAP INITIALIZATION
+        // ============================================================
+        function initMap() {
+            map = L.map('map', {
+                zoomControl: true,
+                attributionControl: true
+            }).setView(CONFIG.initialCenter, CONFIG.initialZoom);
+            
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(map);
 
-            if (data) {
-                distName.textContent = "حي " + data["الحي"];
-                
-                let typeText = data["type"];
-                if (typeText === "غير معلوم") typeText = "قيد التصنيف";
-                
-                distType.textContent = typeText;
-                
-                // تحديد لون النقطة فقط (بدون نصوص إضافية)
-                statusDot.className = 'status-dot'; // reset
-                if(typeText.includes('سكنية') || typeText.includes('مميز')) {
-                    statusDot.classList.add('bg-green');
-                } else if (typeText.includes('اقتصادية')) {
-                    statusDot.classList.add('bg-blue');
-                } else {
-                    statusDot.classList.add('bg-purple');
-                }
+            // Custom marker icon
+            const customIcon = L.icon({
+                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+                shadowSize: [41, 41]
+            });
 
-            } else {
-                distName.textContent = "خارج النطاق";
-                distType.textContent = "غير متاح حالياً";
-                statusDot.className = 'status-dot';
+            currentMarker = L.marker(CONFIG.initialCenter, {
+                icon: customIcon,
+                draggable: false
+            }).addTo(map);
+        }
+
+        // ============================================================
+        // GEOLOCATION
+        // ============================================================
+        function locateUser() {
+            if (!navigator.geolocation) {
+                showError('المتصفح لا يدعم خاصية تحديد الموقع الجغرافي.');
+                return;
             }
 
+            const btn = document.getElementById('locationBtn');
+            btn.classList.add('loading');
+            btn.innerHTML = '⏳';
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    
+                    userLocation = { lat, lng };
+                    
+                    // Update map and marker
+                    map.setView([lat, lng], CONFIG.locationZoom);
+                    currentMarker.setLatLng([lat, lng]);
+                    
+                    // Show GPS status
+                    showGPSStatus();
+                    
+                    // Reset button
+                    btn.classList.remove('loading');
+                    btn.innerHTML = '📍';
+                    
+                    // Close modal if open
+                    closeModal();
+                },
+                (error) => {
+                    btn.classList.remove('loading');
+                    btn.innerHTML = '📍';
+                    
+                    let errorMessage = 'تعذر تحديد الموقع. ';
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMessage += 'يرجى السماح بالوصول إلى الموقع من إعدادات المتصفح.';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMessage += 'معلومات الموقع غير متاحة حالياً.';
+                            break;
+                        case error.TIMEOUT:
+                            errorMessage += 'انتهت مهلة الطلب. حاول مرة أخرى.';
+                            break;
+                        default:
+                            errorMessage += 'حدث خطأ غير معروف.';
+                    }
+                    showError(errorMessage);
+                }
+            );
+        }
+
+        function showGPSStatus() {
+            const overlay = document.getElementById('gpsOverlay');
+            overlay.classList.add('show');
+            setTimeout(() => {
+                overlay.classList.remove('show');
+            }, 3000);
+        }
+
+        // ============================================================
+        // LOCATION CHECK
+        // ============================================================
+        function isPointInPolygon(point, vs) {
+            const x = point[0], y = point[1];
+            let inside = false;
+            
+            for (let i = 0, j = vs.length - 1; i < vs.length; j = i++) {
+                const xi = vs[i][0], yi = vs[i][1];
+                const xj = vs[j][0], yj = vs[j][1];
+                
+                const intersect = ((yi > y) !== (yj > y)) &&
+                    (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+                    
+                if (intersect) inside = !inside;
+            }
+            
+            return inside;
+        }
+
+        async function checkLocation() {
+            if (!geoData || !geoData.features) {
+                showError('البيانات لم تتحمل بعد. يرجى الانتظار قليلاً.');
+                return;
+            }
+
+            const position = currentMarker.getLatLng();
+            const userPoint = [position.lng, position.lat];
+            
+            // Show loading
+            const btn = document.getElementById('checkBtn');
+            const btnText = document.getElementById('btnText');
+            btn.classList.add('loading');
+            btnText.textContent = 'جاري البحث...';
+
+            setTimeout(() => {
+                let foundRegion = null;
+                
+                for (const feature of geoData.features) {
+                    if (feature.geometry && feature.geometry.rings) {
+                        const polygonRings = feature.geometry.rings[0];
+                        if (isPointInPolygon(userPoint, polygonRings)) {
+                            foundRegion = feature.attributes;
+                            break;
+                        }
+                    }
+                }
+                
+                // Reset button
+                btn.classList.remove('loading');
+                btnText.textContent = 'استعلام عن الموقع';
+                
+                // Show result
+                showResult(foundRegion);
+            }, 600);
+        }
+
+        // ============================================================
+        // RESULT DISPLAY
+        // ============================================================
+        function showResult(data) {
+            const modal = document.getElementById('resultModal');
+            const modalBody = document.getElementById('modalBody');
+            
+            if (data) {
+                const districtName = data["الحي"] || "غير محدد";
+                let districtType = data["type"] || "غير معلوم";
+                
+                if (districtType === "غير معلوم") {
+                    districtType = "قيد التصنيف";
+                }
+                
+                // Determine status class
+                let statusClass = 'unknown';
+                if (districtType.includes('سكنية') || districtType.includes('مميز')) {
+                    statusClass = 'residential';
+                } else if (districtType.includes('اقتصادية') || districtType.includes('تجارية')) {
+                    statusClass = 'commercial';
+                } else if (districtType.includes('مختلط')) {
+                    statusClass = 'mixed';
+                }
+                
+                modalBody.innerHTML = `
+                    <div class="info-card">
+                        <div class="info-header">
+                            <div class="info-icon">📍</div>
+                            <div style="flex: 1;">
+                                <div class="info-label">الحي التابع</div>
+                            </div>
+                        </div>
+                        <div class="info-value">حي ${districtName}</div>
+                    </div>
+                    
+                    <div class="info-card">
+                        <div class="info-header">
+                            <div class="info-icon">🏘️</div>
+                            <div style="flex: 1;">
+                                <div class="info-label">تصنيف المنطقة</div>
+                            </div>
+                        </div>
+                        <div class="info-value">
+                            <div class="status-badge ${statusClass}">
+                                <div class="status-dot"></div>
+                                ${districtType}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                modalBody.innerHTML = `
+                    <div class="not-found">
+                        <div class="not-found-icon">📍</div>
+                        <div class="not-found-text">الموقع خارج نطاق التغطية</div>
+                        <div class="not-found-hint">الموقع المحدد غير متاح في قاعدة البيانات حالياً</div>
+                    </div>
+                `;
+            }
+            
             modal.classList.add('show');
         }
 
         function closeModal() {
             document.getElementById('resultModal').classList.remove('show');
         }
+
+        function showError(message) {
+            alert(message);
+        }
+
+        // ============================================================
+        // EVENT LISTENERS
+        // ============================================================
+        document.getElementById('locationBtn').addEventListener('click', locateUser);
+        document.getElementById('checkBtn').addEventListener('click', checkLocation);
+
+        // ============================================================
+        // INITIALIZATION
+        // ============================================================
+        initMap();
+        loadGeoData();
     </script>
 </body>
 </html>
