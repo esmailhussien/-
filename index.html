@@ -3,31 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>الاستعلام المكاني | محافظة الإسكندرية</title>
+    <title>بوابة الاستعلام المكاني - محافظة الإسكندرية</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700" rel="stylesheet">
 
     <style>
         :root {
-            --gov-navy: #0B2F5C;
-            --gov-blue: #1B5A9A;
-            --alex-sea: #0984D1;
-            --success-green: #0F9B5D;
-            --warning-amber: #F59E0B;
-            --text-primary: #1F2937;
-            --text-secondary: #6B7280;
-            --bg-light: #F8FAFC;
-            --white: #FFFFFF;
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
-            --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
-            --shadow-lg: 0 10px 30px rgba(0,0,0,0.15);
-            --radius-sm: 8px;
-            --radius-md: 12px;
-            --radius-lg: 20px;
+            --primary: #13ec5b;
+            --primary-dark: #0fc74c;
+            --bg-light: #f6f8f6;
+            --text-primary: #111813;
+            --text-secondary: #61896f;
         }
 
         * {
@@ -40,403 +29,458 @@
             font-family: 'Cairo', sans-serif;
             background: var(--bg-light);
             height: 100vh;
-            display: flex;
-            flex-direction: column;
+            width: 100vw;
             overflow: hidden;
-            position: relative;
+            color: var(--text-primary);
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* ========== HEADER ========== */
-        .gov-header {
-            background: linear-gradient(135deg, var(--gov-navy) 0%, var(--gov-blue) 100%);
-            color: var(--white);
-            padding: 20px 24px;
-            box-shadow: var(--shadow-lg);
-            position: relative;
-            z-index: 1000;
+        /* ========== MAP BACKGROUND ========== */
+        #map {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
         }
 
-        .header-content {
+        .map-gradient-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, 
+                rgba(246, 248, 246, 0.1) 0%, 
+                rgba(246, 248, 246, 0.8) 100%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* ========== GLASS HEADER ========== */
+        .glass-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 50;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-left {
             display: flex;
             align-items: center;
             gap: 16px;
-            max-width: 1400px;
-            margin: 0 auto;
         }
 
         .gov-logo {
-            width: 56px;
-            height: 56px;
-            background: var(--white);
+            width: 48px;
+            height: 48px;
+            background: rgba(19, 236, 91, 0.2);
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 28px;
-            font-weight: 800;
-            color: var(--gov-navy);
-            box-shadow: var(--shadow-md);
-            flex-shrink: 0;
+            color: var(--primary);
         }
 
-        .header-text h1 {
-            font-size: 22px;
+        .gov-logo svg {
+            width: 32px;
+            height: 32px;
+        }
+
+        .header-title h1 {
+            font-size: 18px;
             font-weight: 700;
-            margin-bottom: 4px;
+            line-height: 1.2;
             letter-spacing: -0.3px;
         }
 
-        .header-text p {
-            font-size: 14px;
-            opacity: 0.9;
-            font-weight: 400;
+        .header-title span {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-secondary);
+            font-weight: 600;
         }
 
-        /* ========== MAP CONTAINER ========== */
-        .map-wrapper {
-            flex: 1;
-            position: relative;
-            overflow: hidden;
-        }
-
-        #map {
-            width: 100%;
-            height: 100%;
-            background: var(--bg-light);
-        }
-
-        /* ========== GPS STATUS OVERLAY ========== */
-        .gps-overlay {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 500;
-            background: var(--white);
-            padding: 12px 24px;
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-lg);
+        .header-right {
             display: flex;
             align-items: center;
-            gap: 12px;
-            opacity: 0;
+            gap: 24px;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-box input {
+            width: 280px;
+            height: 40px;
+            padding: 0 44px 0 16px;
+            border-radius: 12px;
+            border: none;
+            background: rgba(255, 255, 255, 0.5);
+            font-family: 'Cairo', sans-serif;
+            font-size: 14px;
+            outline: none;
             transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 0 0 2px var(--primary);
+        }
+
+        .search-box .material-symbols-outlined {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 20px;
             pointer-events: none;
         }
 
-        .gps-overlay.show {
-            opacity: 1;
-        }
-
-        .gps-pulse {
-            width: 12px;
-            height: 12px;
-            background: var(--success-green);
+        .user-avatar {
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            animation: pulse 2s infinite;
+            border: 2px solid var(--primary);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
         }
 
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.3); opacity: 0.6; }
+        /* ========== FLOATING TOOLBAR ========== */
+        .floating-toolbar {
+            position: fixed;
+            left: 24px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 40;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
 
-        .gps-text {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-primary);
+        .zoom-controls {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.05);
         }
 
-        /* ========== LOCATION BUTTON ========== */
-        .location-btn {
-            position: absolute;
-            bottom: 140px;
-            right: 20px;
-            width: 56px;
-            height: 56px;
-            background: var(--white);
+        .zoom-btn {
+            width: 48px;
+            height: 48px;
             border: none;
-            border-radius: 50%;
-            box-shadow: var(--shadow-lg);
+            background: white;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
-            transition: all 0.3s ease;
-            z-index: 500;
+            transition: all 0.2s ease;
+            color: #4b5563;
         }
 
-        .location-btn:hover {
+        .zoom-btn:hover {
+            background: #f9fafb;
+            color: var(--primary);
+        }
+
+        .zoom-btn:first-child {
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .tool-btn {
+            width: 48px;
+            height: 48px;
+            background: white;
+            border: 1px solid rgba(0,0,0,0.05);
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            color: #4b5563;
+        }
+
+        .tool-btn:hover {
+            color: var(--primary);
             transform: scale(1.05);
-            box-shadow: 0 12px 35px rgba(0,0,0,0.2);
         }
 
-        .location-btn:active {
+        .tool-btn:active {
             transform: scale(0.95);
         }
 
-        .location-btn.loading {
-            animation: rotate 1s linear infinite;
+        .tool-btn.loading {
+            animation: spin 1s linear infinite;
         }
 
-        @keyframes rotate {
+        @keyframes spin {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
 
-        /* ========== MAIN BUTTON ========== */
-        .action-panel {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: linear-gradient(to top, var(--white) 0%, var(--white) 85%, transparent 100%);
-            padding: 24px 20px 32px;
-            z-index: 500;
-            pointer-events: none;
-        }
-
-        .check-btn {
-            width: 100%;
-            max-width: 500px;
-            margin: 0 auto;
-            display: block;
-            background: linear-gradient(135deg, var(--success-green) 0%, #0D8551 100%);
-            color: var(--white);
-            border: none;
-            padding: 18px 32px;
-            border-radius: var(--radius-lg);
-            font-size: 18px;
-            font-weight: 700;
-            font-family: 'Cairo', sans-serif;
-            cursor: pointer;
-            box-shadow: var(--shadow-lg);
-            transition: all 0.3s ease;
-            pointer-events: auto;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .check-btn::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.3);
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
-
-        .check-btn:hover::before {
-            width: 300px;
-            height: 300px;
-        }
-
-        .check-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 14px 40px rgba(15, 155, 93, 0.4);
-        }
-
-        .check-btn:active {
-            transform: translateY(0);
-        }
-
-        .check-btn:disabled {
-            background: linear-gradient(135deg, #9CA3AF 0%, #6B7280 100%);
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
-
-        .btn-content {
-            position: relative;
-            z-index: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .btn-spinner {
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,0.3);
-            border-top-color: var(--white);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            display: none;
-        }
-
-        .check-btn.loading .btn-spinner {
-            display: block;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* ========== RESULT MODAL ========== */
-        .result-modal {
+        /* ========== BOTTOM UI ========== */
+        .bottom-ui {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            background: var(--white);
-            border-radius: 24px 24px 0 0;
-            box-shadow: 0 -10px 40px rgba(0,0,0,0.2);
-            z-index: 2000;
-            transform: translateY(100%);
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            max-height: 70vh;
-            overflow-y: auto;
-        }
-
-        .result-modal.show {
-            transform: translateY(0);
-        }
-
-        .modal-handle {
-            width: 40px;
-            height: 4px;
-            background: #E5E7EB;
-            border-radius: 2px;
-            margin: 12px auto 20px;
-        }
-
-        .modal-header {
-            padding: 0 24px 20px;
-            border-bottom: 2px solid #F3F4F6;
+            z-index: 40;
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
             align-items: center;
+            pointer-events: none;
         }
 
-        .modal-title {
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--gov-navy);
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        /* PULSE BUTTON */
+        .query-button-wrapper {
+            pointer-events: auto;
+            margin-bottom: 32px;
         }
 
-        .close-btn {
-            width: 36px;
-            height: 36px;
-            background: #F3F4F6;
-            border: none;
-            border-radius: 50%;
-            font-size: 20px;
-            color: var(--text-secondary);
-            cursor: pointer;
-            transition: all 0.2s ease;
+        .query-btn {
+            position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
-        }
-
-        .close-btn:hover {
-            background: #E5E7EB;
+            gap: 12px;
+            padding: 0 32px;
+            height: 64px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             color: var(--text-primary);
-        }
-
-        .modal-body {
-            padding: 24px;
-        }
-
-        .info-card {
-            background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);
-            border-radius: var(--radius-md);
-            padding: 20px;
-            margin-bottom: 16px;
-            border-right: 4px solid var(--alex-sea);
+            border: none;
+            border-radius: 100px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 8px 30px rgba(19, 236, 91, 0.3);
             transition: all 0.3s ease;
         }
 
-        .info-card:hover {
-            transform: translateX(-4px);
-            box-shadow: var(--shadow-md);
+        .query-btn:hover {
+            transform: scale(1.05);
         }
 
-        .info-header {
+        .query-btn:active {
+            transform: scale(0.95);
+        }
+
+        .query-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .query-btn .pulse-ring {
+            position: absolute;
+            inset: 0;
+            border-radius: 100px;
+            background: rgba(19, 236, 91, 0.4);
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            z-index: -1;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.05);
+                opacity: 0.5;
+            }
+        }
+
+        /* ========== RESULT PANEL ========== */
+        .result-panel {
+            pointer-events: auto;
+            width: 100%;
+            max-width: 1024px;
+            background: white;
+            border-radius: 24px 24px 0 0;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
+            border-top: 1px solid rgba(0,0,0,0.05);
+            padding: 24px;
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .result-panel.show {
+            transform: translateY(0);
+        }
+
+        .panel-handle {
+            width: 48px;
+            height: 6px;
+            background: #e5e7eb;
+            border-radius: 3px;
+            margin: 0 auto 24px;
+        }
+
+        .panel-header {
             display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 8px;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 24px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
         }
 
-        .info-icon {
-            width: 40px;
-            height: 40px;
-            background: var(--white);
-            border-radius: 10px;
+        .panel-info {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            box-shadow: var(--shadow-sm);
-        }
-
-        .info-label {
-            font-size: 13px;
-            color: var(--text-secondary);
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .info-value {
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--gov-navy);
-            margin-top: 4px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            flex-direction: column;
+            gap: 4px;
         }
 
         .status-badge {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            padding: 6px 14px;
-            border-radius: 20px;
+            gap: 8px;
+            padding: 4px 8px;
+            background: rgba(19, 236, 91, 0.2);
+            color: #15803d;
+            font-size: 10px;
+            font-weight: 700;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .coordinates {
+            color: var(--text-secondary);
             font-size: 14px;
-            font-weight: 600;
-            margin-top: 8px;
         }
 
-        .status-badge.residential {
-            background: rgba(15, 155, 93, 0.15);
-            color: var(--success-green);
+        .panel-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
         }
 
-        .status-badge.commercial {
-            background: rgba(9, 132, 209, 0.15);
-            color: var(--alex-sea);
+        .export-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: var(--primary);
+            color: var(--text-primary);
+            border: none;
+            border-radius: 12px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
         }
 
-        .status-badge.mixed {
-            background: rgba(124, 58, 237, 0.15);
-            color: #7C3AED;
+        .export-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
         }
 
-        .status-badge.unknown {
-            background: rgba(107, 114, 128, 0.15);
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            padding-bottom: 16px;
+        }
+
+        .result-card {
+            background: var(--bg-light);
+            border: 1px solid rgba(0,0,0,0.05);
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
             color: var(--text-secondary);
         }
 
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: currentColor;
-            animation: pulse 2s infinite;
+        .card-label {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
+        .card-content {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .card-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .card-value-ar {
+            font-size: 14px;
+            font-weight: 500;
+            color: #6b7280;
+        }
+
+        .card-value.success {
+            color: #059669;
+        }
+
+        /* ========== LOADING OVERLAY ========== */
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(246, 248, 246, 0.95);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            transition: opacity 0.3s ease;
+        }
+
+        .loading-overlay.hide {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loader {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #e5e7eb;
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .loading-text {
+            font-size: 16px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        /* ========== NOT FOUND ========== */
         .not-found {
             text-align: center;
             padding: 40px 20px;
@@ -452,108 +496,57 @@
             font-size: 18px;
             color: var(--text-secondary);
             margin-bottom: 8px;
+            font-weight: 600;
         }
 
         .not-found-hint {
             font-size: 14px;
-            color: var(--text-secondary);
-        }
-
-        /* ========== LOADING OVERLAY ========== */
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(255,255,255,0.95);
-            z-index: 3000;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 20px;
-            opacity: 1;
-            transition: opacity 0.3s ease;
-        }
-
-        .loading-overlay.hide {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .loader {
-            width: 50px;
-            height: 50px;
-            border: 4px solid #E5E7EB;
-            border-top-color: var(--gov-blue);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        .loading-text {
-            font-size: 16px;
-            color: var(--text-secondary);
-            font-weight: 600;
+            color: #9ca3af;
         }
 
         /* ========== RESPONSIVE ========== */
-        @media (max-width: 640px) {
-            .gov-header {
-                padding: 16px 20px;
+        @media (max-width: 768px) {
+            .glass-header {
+                padding: 12px 16px;
             }
 
-            .gov-logo {
-                width: 48px;
-                height: 48px;
-                font-size: 24px;
+            .search-box {
+                display: none;
             }
 
-            .header-text h1 {
-                font-size: 18px;
-            }
-
-            .header-text p {
-                font-size: 12px;
-            }
-
-            .check-btn {
+            .header-title h1 {
                 font-size: 16px;
-                padding: 16px 28px;
             }
 
-            .location-btn {
-                bottom: 120px;
-                width: 50px;
-                height: 50px;
-                font-size: 22px;
+            .floating-toolbar {
+                left: 16px;
+            }
+
+            .query-btn {
+                font-size: 16px;
+                padding: 0 24px;
+                height: 56px;
+            }
+
+            .result-panel {
+                padding: 20px 16px;
+            }
+
+            .results-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             }
         }
 
-        /* ========== CUSTOM LEAFLET STYLES ========== */
+        /* ========== LEAFLET CUSTOMIZATION ========== */
+        .leaflet-control-container .leaflet-top,
+        .leaflet-control-container .leaflet-bottom {
+            display: none;
+        }
+
         .leaflet-control-attribution {
             font-size: 10px;
             background: rgba(255,255,255,0.8) !important;
-        }
-
-        .leaflet-control-zoom {
-            border: none !important;
-            box-shadow: var(--shadow-md) !important;
-        }
-
-        .leaflet-control-zoom a {
-            border: none !important;
-            background: var(--white) !important;
-            color: var(--gov-navy) !important;
-            width: 36px !important;
-            height: 36px !important;
-            line-height: 36px !important;
-            font-size: 20px !important;
-            font-weight: 700 !important;
-        }
-
-        .leaflet-control-zoom a:hover {
-            background: var(--bg-light) !important;
+            padding: 2px 6px !important;
         }
     </style>
 </head>
@@ -565,55 +558,83 @@
         <div class="loading-text">جاري تحميل البيانات...</div>
     </div>
 
-    <!-- HEADER -->
-    <div class="gov-header">
-        <div class="header-content">
-            <div class="gov-logo">م</div>
-            <div class="header-text">
-                <h1>محافظة الإسكندرية</h1>
-                <p>بوابة الاستعلام المكاني الإلكترونية</p>
+    <!-- MAP -->
+    <div id="map"></div>
+    <div class="map-gradient-overlay"></div>
+
+    <!-- GLASS HEADER -->
+    <header class="glass-header">
+        <div class="header-left">
+            <div class="gov-logo">
+                <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M42.4379 44C42.4379 44 36.0744 33.9038 41.1692 24C46.8624 12.9336 42.2078 4 42.2078 4L7.01134 4C7.01134 4 11.6577 12.932 5.96912 23.9969C0.876273 33.9029 7.27094 44 7.27094 44L42.4379 44Z" fill="currentColor"/>
+                </svg>
+            </div>
+            <div class="header-title">
+                <h1>بوابة الاستعلام المكاني</h1>
+                <span>محافظة الإسكندرية</span>
             </div>
         </div>
-    </div>
+        <div class="header-right">
+            <div class="search-box">
+                <span class="material-symbols-outlined">search</span>
+                <input type="text" placeholder="ابحث عن إحداثيات أو منطقة...">
+            </div>
+            <div class="user-avatar">م</div>
+        </div>
+    </header>
 
-    <!-- GPS STATUS -->
-    <div id="gpsOverlay" class="gps-overlay">
-        <div class="gps-pulse"></div>
-        <div class="gps-text">تم تحديد موقعك الحالي</div>
-    </div>
-
-    <!-- MAP -->
-    <div class="map-wrapper">
-        <div id="map"></div>
-        
-        <!-- LOCATION BUTTON -->
-        <button id="locationBtn" class="location-btn" title="تحديد موقعي الحالي">
-            📍
-        </button>
-
-        <!-- ACTION PANEL -->
-        <div class="action-panel">
-            <button id="checkBtn" class="check-btn" disabled>
-                <div class="btn-content">
-                    <div class="btn-spinner"></div>
-                    <span id="btnText">جاري التحميل...</span>
-                </div>
+    <!-- FLOATING TOOLBAR -->
+    <div class="floating-toolbar">
+        <div class="zoom-controls">
+            <button class="zoom-btn" onclick="map.zoomIn()">
+                <span class="material-symbols-outlined">add</span>
+            </button>
+            <button class="zoom-btn" onclick="map.zoomOut()">
+                <span class="material-symbols-outlined">remove</span>
             </button>
         </div>
+        <button id="locationBtn" class="tool-btn" onclick="locateUser()" title="موقعي الحالي">
+            <span class="material-symbols-outlined">my_location</span>
+        </button>
+        <button class="tool-btn" title="الطبقات">
+            <span class="material-symbols-outlined">layers</span>
+        </button>
     </div>
 
-    <!-- RESULT MODAL -->
-    <div id="resultModal" class="result-modal">
-        <div class="modal-handle"></div>
-        <div class="modal-header">
-            <div class="modal-title">
-                <span>📋</span>
-                <span>نتيجة الاستعلام</span>
-            </div>
-            <button class="close-btn" onclick="closeModal()">×</button>
+    <!-- BOTTOM UI -->
+    <div class="bottom-ui">
+        <!-- QUERY BUTTON -->
+        <div class="query-button-wrapper">
+            <button id="queryBtn" class="query-btn" onclick="checkLocation()" disabled>
+                <span class="pulse-ring"></span>
+                <span class="material-symbols-outlined">location_searching</span>
+                <span id="btnText">جاري التحميل...</span>
+            </button>
         </div>
-        <div class="modal-body" id="modalBody">
-            <!-- Will be filled dynamically -->
+
+        <!-- RESULT PANEL -->
+        <div id="resultPanel" class="result-panel">
+            <div class="panel-handle"></div>
+            <div class="panel-header">
+                <div class="panel-info">
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        <span class="status-badge">
+                            موقع نشط
+                        </span>
+                        <span class="coordinates" id="coordinates">--</span>
+                    </div>
+                    <h3 class="panel-title">نتائج الاستعلام الإداري</h3>
+                </div>
+                <button class="export-btn" onclick="exportReport()">
+                    <span class="material-symbols-outlined">file_download</span>
+                    تصدير التقرير
+                </button>
+            </div>
+            
+            <div id="resultsGrid" class="results-grid">
+                <!-- Cards will be inserted here -->
+            </div>
         </div>
     </div>
 
@@ -631,7 +652,6 @@
         let geoData = null;
         let map = null;
         let currentMarker = null;
-        let userLocation = null;
 
         // ============================================================
         // DATA LOADING
@@ -644,21 +664,20 @@
                 geoData = await response.json();
                 console.log('✅ تم تحميل بيانات المناطق بنجاح');
                 
-                enableCheckButton();
+                enableQueryButton();
                 hideLoadingOverlay();
                 
             } catch (error) {
                 console.error('❌ خطأ في تحميل البيانات:', error);
-                showError('تعذر تحميل بيانات المناطق. يرجى التحقق من الاتصال بالإنترنت والمحاولة مرة أخرى.');
+                showError('تعذر تحميل بيانات المناطق. يرجى التحقق من الاتصال بالإنترنت.');
             }
         }
 
-        function enableCheckButton() {
-            const btn = document.getElementById('checkBtn');
+        function enableQueryButton() {
+            const btn = document.getElementById('queryBtn');
             const btnText = document.getElementById('btnText');
             btn.disabled = false;
-            btn.classList.remove('loading');
-            btnText.textContent = 'استعلام عن الموقع';
+            btnText.textContent = 'استعلام عن الموقع الحالي';
         }
 
         function hideLoadingOverlay() {
@@ -672,7 +691,7 @@
         // ============================================================
         function initMap() {
             map = L.map('map', {
-                zoomControl: true,
+                zoomControl: false,
                 attributionControl: true
             }).setView(CONFIG.initialCenter, CONFIG.initialZoom);
             
@@ -681,9 +700,8 @@
                 maxZoom: 19
             }).addTo(map);
 
-            // Custom marker icon
             const customIcon = L.icon({
-                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
                 shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
                 iconSize: [25, 41],
                 iconAnchor: [12, 41],
@@ -708,32 +726,20 @@
 
             const btn = document.getElementById('locationBtn');
             btn.classList.add('loading');
-            btn.innerHTML = '⏳';
 
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     const lat = position.coords.latitude;
                     const lng = position.coords.longitude;
                     
-                    userLocation = { lat, lng };
-                    
-                    // Update map and marker
                     map.setView([lat, lng], CONFIG.locationZoom);
                     currentMarker.setLatLng([lat, lng]);
                     
-                    // Show GPS status
-                    showGPSStatus();
-                    
-                    // Reset button
                     btn.classList.remove('loading');
-                    btn.innerHTML = '📍';
-                    
-                    // Close modal if open
-                    closeModal();
+                    closePanel();
                 },
                 (error) => {
                     btn.classList.remove('loading');
-                    btn.innerHTML = '📍';
                     
                     let errorMessage = 'تعذر تحديد الموقع. ';
                     switch(error.code) {
@@ -752,14 +758,6 @@
                     showError(errorMessage);
                 }
             );
-        }
-
-        function showGPSStatus() {
-            const overlay = document.getElementById('gpsOverlay');
-            overlay.classList.add('show');
-            setTimeout(() => {
-                overlay.classList.remove('show');
-            }, 3000);
         }
 
         // ============================================================
@@ -791,11 +789,12 @@
             const position = currentMarker.getLatLng();
             const userPoint = [position.lng, position.lat];
             
-            // Show loading
-            const btn = document.getElementById('checkBtn');
+            const btn = document.getElementById('queryBtn');
             const btnText = document.getElementById('btnText');
-            btn.classList.add('loading');
+            const originalText = btnText.textContent;
+            
             btnText.textContent = 'جاري البحث...';
+            btn.disabled = true;
 
             setTimeout(() => {
                 let foundRegion = null;
@@ -810,11 +809,10 @@
                     }
                 }
                 
-                // Reset button
-                btn.classList.remove('loading');
-                btnText.textContent = 'استعلام عن الموقع';
+                btn.disabled = false;
+                btnText.textContent = originalText;
                 
-                // Show result
+                updateCoordinates(position);
                 showResult(foundRegion);
             }, 600);
         }
@@ -822,9 +820,14 @@
         // ============================================================
         // RESULT DISPLAY
         // ============================================================
+        function updateCoordinates(position) {
+            const coords = document.getElementById('coordinates');
+            coords.textContent = `${position.lat.toFixed(4)}° N, ${position.lng.toFixed(4)}° E`;
+        }
+
         function showResult(data) {
-            const modal = document.getElementById('resultModal');
-            const modalBody = document.getElementById('modalBody');
+            const panel = document.getElementById('resultPanel');
+            const grid = document.getElementById('resultsGrid');
             
             if (data) {
                 const districtName = data["الحي"] || "غير محدد";
@@ -834,45 +837,65 @@
                     districtType = "قيد التصنيف";
                 }
                 
-                // Determine status class
-                let statusClass = 'unknown';
-                if (districtType.includes('سكنية') || districtType.includes('مميز')) {
-                    statusClass = 'residential';
-                } else if (districtType.includes('اقتصادية') || districtType.includes('تجارية')) {
-                    statusClass = 'commercial';
+                // Determine classification
+                let classification = "سكني";
+                let classificationEn = "Residential";
+                if (districtType.includes('تجار')) {
+                    classification = "تجاري";
+                    classificationEn = "Commercial";
                 } else if (districtType.includes('مختلط')) {
-                    statusClass = 'mixed';
+                    classification = "مختلط";
+                    classificationEn = "Mixed Use";
                 }
                 
-                modalBody.innerHTML = `
-                    <div class="info-card">
-                        <div class="info-header">
-                            <div class="info-icon">📍</div>
-                            <div style="flex: 1;">
-                                <div class="info-label">الحي التابع</div>
-                            </div>
+                grid.innerHTML = `
+                    <div class="result-card">
+                        <div class="card-header">
+                            <span class="material-symbols-outlined">account_balance</span>
+                            <span class="card-label">الحي</span>
                         </div>
-                        <div class="info-value">حي ${districtName}</div>
+                        <div class="card-content">
+                            <div class="card-value">حي ${districtName}</div>
+                            <div class="card-value-ar">District</div>
+                        </div>
                     </div>
                     
-                    <div class="info-card">
-                        <div class="info-header">
-                            <div class="info-icon">🏘️</div>
-                            <div style="flex: 1;">
-                                <div class="info-label">تصنيف المنطقة</div>
-                            </div>
+                    <div class="result-card">
+                        <div class="card-header">
+                            <span class="material-symbols-outlined">category</span>
+                            <span class="card-label">التصنيف</span>
                         </div>
-                        <div class="info-value">
-                            <div class="status-badge ${statusClass}">
-                                <div class="status-dot"></div>
-                                ${districtType}
-                            </div>
+                        <div class="card-content">
+                            <div class="card-value">${classification}</div>
+                            <div class="card-value-ar">${classificationEn}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="result-card">
+                        <div class="card-header">
+                            <span class="material-symbols-outlined">architecture</span>
+                            <span class="card-label">الكثافة</span>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-value">كثافة عالية</div>
+                            <div class="card-value-ar">High Density</div>
+                        </div>
+                    </div>
+                    
+                    <div class="result-card">
+                        <div class="card-header">
+                            <span class="material-symbols-outlined">verified</span>
+                            <span class="card-label">الحالة</span>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-value success">مطابق</div>
+                            <div class="card-value-ar">Compliant</div>
                         </div>
                     </div>
                 `;
             } else {
-                modalBody.innerHTML = `
-                    <div class="not-found">
+                grid.innerHTML = `
+                    <div class="not-found" style="grid-column: 1 / -1;">
                         <div class="not-found-icon">📍</div>
                         <div class="not-found-text">الموقع خارج نطاق التغطية</div>
                         <div class="not-found-hint">الموقع المحدد غير متاح في قاعدة البيانات حالياً</div>
@@ -880,22 +903,20 @@
                 `;
             }
             
-            modal.classList.add('show');
+            panel.classList.add('show');
         }
 
-        function closeModal() {
-            document.getElementById('resultModal').classList.remove('show');
+        function closePanel() {
+            document.getElementById('resultPanel').classList.remove('show');
         }
 
         function showError(message) {
             alert(message);
         }
 
-        // ============================================================
-        // EVENT LISTENERS
-        // ============================================================
-        document.getElementById('locationBtn').addEventListener('click', locateUser);
-        document.getElementById('checkBtn').addEventListener('click', checkLocation);
+        function exportReport() {
+            alert('سيتم تنفيذ وظيفة تصدير التقرير قريباً');
+        }
 
         // ============================================================
         // INITIALIZATION
