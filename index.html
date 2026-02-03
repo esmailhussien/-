@@ -1,3 +1,5 @@
+[file name]: alexandria-fixed.html
+[file content begin]
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -318,6 +320,7 @@
             padding: 24px;
             transform: translateY(100%);
             transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            touch-action: pan-y;
         }
 
         .result-panel.show {
@@ -330,6 +333,12 @@
             background: #e5e7eb;
             border-radius: 3px;
             margin: 0 auto 24px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .panel-handle:hover {
+            background: #d1d5db;
         }
 
         .panel-header {
@@ -624,7 +633,7 @@
 
         <!-- RESULT PANEL -->
         <div id="resultPanel" class="result-panel">
-            <div class="panel-handle"></div>
+            <div class="panel-handle" onclick="closePanel()" title="اضغط للإغلاق"></div>
             <div class="panel-header">
                 <div class="panel-info">
                     <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
@@ -652,15 +661,13 @@
         // CONFIGURATION
         // ============================================================
         const CONFIG = {
-            // Cloudflare Worker API URL (replace with your actual worker URL)
-            apiUrl: 'https://blue-base-7710.olivesom3a.workers.dev/',
+            // Cloudflare Worker API URL
+            apiUrl: 'https://blue-base-7710.olivesom3a.workers.dev',
             initialCenter: [31.215, 29.960],
             initialZoom: 13,
-            locationZoom: 16,
-            useCloudflareAPI: true // Set to false to use local data only
+            locationZoom: 16
         };
 
-        let geoData = null;
         let map = null;
         let currentMarker = null;
 
@@ -668,29 +675,9 @@
         // DATA LOADING & API
         // ============================================================
         async function loadGeoData() {
-            // If using Cloudflare API, skip loading local data
-            if (CONFIG.useCloudflareAPI) {
-                console.log('✅ Using Cloudflare Worker API');
-                enableQueryButton();
-                hideLoadingOverlay();
-                return;
-            }
-
-            // Fallback: load local GeoJSON data
-            try {
-                const response = await fetch('https://gist.githubusercontent.com/esmailhussien/d15d088e30bbe594bbea6abf46341e2c/raw/0dd51d9f27e0ea3a3da4da9aa73771be163994ba/sharq.json');
-                if (!response.ok) throw new Error('فشل تحميل البيانات');
-                
-                geoData = await response.json();
-                console.log('✅ تم تحميل بيانات المناطق محلياً');
-                
-                enableQueryButton();
-                hideLoadingOverlay();
-                
-            } catch (error) {
-                console.error('❌ خطأ في تحميل البيانات:', error);
-                showError('تعذر تحميل بيانات المناطق. يرجى التحقق من الاتصال بالإنترنت.');
-            }
+            console.log('✅ Using Cloudflare Worker API');
+            enableQueryButton();
+            hideLoadingOverlay();
         }
 
         // Call Cloudflare Worker API
@@ -717,56 +704,6 @@
             } catch (error) {
                 console.error('❌ API Error:', error);
                 throw error;
-            }
-        }
-
-        // Local point-in-polygon check (fallback)
-        function isPointInPolygon(point, vs) {
-            const x = point[0], y = point[1];
-            let inside = false;
-            
-            for (let i = 0, j = vs.length - 1; i < vs.length; j = i++) {
-                const xi = vs[i][0], yi = vs[i][1];
-                const xj = vs[j][0], yj = vs[j][1];
-                
-                const intersect = ((yi > y) !== (yj > y)) &&
-                    (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
-                    
-                if (intersect) inside = !inside;
-            }
-            
-            return inside;
-        }
-
-        async function checkLocationLocal(lat, lng) {
-            if (!geoData || !geoData.features) {
-                throw new Error('البيانات المحلية غير متوفرة');
-            }
-
-            const userPoint = [lng, lat];
-            let foundRegion = null;
-            
-            for (const feature of geoData.features) {
-                if (feature.geometry && feature.geometry.rings) {
-                    const polygonRings = feature.geometry.rings[0];
-                    if (isPointInPolygon(userPoint, polygonRings)) {
-                        foundRegion = feature.attributes;
-                        break;
-                    }
-                }
-            }
-            
-            if (foundRegion) {
-                return {
-                    status: 'success',
-                    district: foundRegion["الحي"] || "غير محدد",
-                    type: foundRegion["type"] || "غير معلوم"
-                };
-            } else {
-                return {
-                    status: 'not_found',
-                    message: 'خارج النطاق'
-                };
             }
         }
 
@@ -940,29 +877,7 @@
         // ============================================================
         // LOCATION CHECK
         // ============================================================
-        function isPointInPolygon(point, vs) {
-            const x = point[0], y = point[1];
-            let inside = false;
-            
-            for (let i = 0, j = vs.length - 1; i < vs.length; j = i++) {
-                const xi = vs[i][0], yi = vs[i][1];
-                const xj = vs[j][0], yj = vs[j][1];
-                
-                const intersect = ((yi > y) !== (yj > y)) &&
-                    (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
-                    
-                if (intersect) inside = !inside;
-            }
-            
-            return inside;
-        }
-
         async function checkLocation() {
-            if (!geoData || !geoData.features) {
-                showError('البيانات لم تتحمل بعد. يرجى الانتظار قليلاً.');
-                return;
-            }
-
             // Get current location via GPS
             if (!navigator.geolocation) {
                 showError('المتصفح لا يدعم خاصية تحديد الموقع الجغرافي.');
@@ -1032,14 +947,8 @@
             `;
 
             try {
-                let result;
-                
-                // Use Cloudflare API or local check
-                if (CONFIG.useCloudflareAPI) {
-                    result = await checkLocationAPI(position.lat, position.lng);
-                } else {
-                    result = await checkLocationLocal(position.lat, position.lng);
-                }
+                // Use Cloudflare API only
+                const result = await checkLocationAPI(position.lat, position.lng);
                 
                 updateCoordinates(position);
                 showResult(result);
@@ -1059,11 +968,6 @@
 
         function hideGetDataButton() {
             document.getElementById('getDataBtnWrapper').style.display = 'none';
-        }
-
-        // New function to search at marker position (for search feature)
-        function searchAtMarkerPosition() {
-            showGetDataButton();
         }
 
         // ============================================================
@@ -1166,10 +1070,66 @@
         }
 
         // ============================================================
+        // SWIPE TO CLOSE PANEL (Mobile Support)
+        // ============================================================
+        let touchStartY = 0;
+        let touchEndY = 0;
+        let isDragging = false;
+
+        function initPanelSwipe() {
+            const panel = document.getElementById('resultPanel');
+            const handle = panel.querySelector('.panel-handle');
+
+            // Touch events for mobile
+            panel.addEventListener('touchstart', (e) => {
+                touchStartY = e.touches[0].clientY;
+                isDragging = true;
+            }, { passive: true });
+
+            panel.addEventListener('touchmove', (e) => {
+                if (!isDragging) return;
+                
+                touchEndY = e.touches[0].clientY;
+                const deltaY = touchEndY - touchStartY;
+                
+                // Only allow dragging down
+                if (deltaY > 0) {
+                    const translateY = Math.min(deltaY, 400);
+                    panel.style.transform = `translateY(${translateY}px)`;
+                    panel.style.transition = 'none';
+                }
+            }, { passive: true });
+
+            panel.addEventListener('touchend', () => {
+                if (!isDragging) return;
+                isDragging = false;
+                
+                const deltaY = touchEndY - touchStartY;
+                
+                // If dragged down more than 100px, close the panel
+                if (deltaY > 100) {
+                    closePanel();
+                } else {
+                    // Reset to original position
+                    panel.style.transform = 'translateY(0)';
+                }
+                
+                panel.style.transition = 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+                touchStartY = 0;
+                touchEndY = 0;
+            });
+
+            // Click on handle to close
+            handle.addEventListener('click', closePanel);
+        }
+
+        // ============================================================
         // INITIALIZATION
         // ============================================================
         initMap();
         loadGeoData();
+        initPanelSwipe();
     </script>
 </body>
 </html>
+[file content end]
