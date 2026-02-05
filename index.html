@@ -33,9 +33,9 @@
             width: 100vw;
             overflow: hidden;
             color: var(--text-primary);
-            /* منع تحديث الصفحة عند السحب لأسفل في الموبايل */
+            /* الحل السحري لمنع التحديث عند السحب لأسفل */
             overscroll-behavior-y: none;
-            position: fixed;
+            position: fixed; /* تثبيت الصفحة لمنع الاهتزاز */
         }
 
         /* ========== MAP BACKGROUND ========== */
@@ -55,14 +55,13 @@
             z-index: 1;
         }
 
-        /* ========== GLASS HEADER (Fixed Z-Index) ========== */
+        /* ========== GLASS HEADER ========== */
         .glass-header {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
-            /* تعديل 1: جعل الهيدر أعلى طبقة في التطبيق ليبقى فوق القائمة */
-            z-index: 2000;
+            z-index: 50;
             background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
@@ -220,7 +219,7 @@
             to { transform: rotate(360deg); }
         }
 
-        /* ========== BOTTOM UI ========== */
+        /* ========== BOTTOM UI (Container for Buttons) ========== */
         .bottom-ui {
             position: fixed;
             bottom: 0;
@@ -231,13 +230,14 @@
             flex-direction: column;
             align-items: center;
             pointer-events: none;
-            /* رفع الأزرار عن القائمة السفلية */
+            /* هام: رفع الحاوية بالكامل لضمان عدم اختفاء الأزرار خلف شريط القائمة */
             padding-bottom: 90px;
             transition: padding-bottom 0.3s ease;
         }
 
         .query-button-wrapper {
             pointer-events: auto;
+            /* هام: تقليل المسافة بين الأزرار */
             margin-bottom: 12px; 
             transition: all 0.3s ease;
         }
@@ -288,7 +288,7 @@
             50% { transform: scale(1.05); opacity: 0.5; }
         }
 
-        /* ========== RESULT PANEL (Adjusted Height) ========== */
+        /* ========== RESULT PANEL (Interactive Sheet) ========== */
         .result-panel {
             pointer-events: auto;
             width: 100%;
@@ -303,18 +303,14 @@
             bottom: 0;
             left: 0;
             right: 0;
-            
-            /* تعديل 2: تحديد الارتفاع الأقصى ليكون أقل من الهيدر */
-            max-height: calc(100vh - 100px); 
-            
+            /* هام: تحديد الارتفاع لمنع التداخل مع الهيدر */
+            max-height: calc(100vh - 120px); 
             height: auto;
             overflow-y: auto;
-            overscroll-behavior-y: contain;
+            overscroll-behavior-y: contain; /* منع سحب الصفحة عند نهاية السكرول */
             
             transform: translateY(105%);
             transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-            
-            /* z-index أقل من الهيدر (2000) */
             z-index: 1000;
             padding-bottom: 30px;
         }
@@ -339,6 +335,7 @@
             display: flex;
             justify-content: center;
             border-bottom: 1px solid transparent;
+            /* منطقة لمس أكبر للسحب */
             height: 40px; 
         }
 
@@ -353,7 +350,7 @@
 
         .panel-header {
             position: sticky;
-            top: 40px;
+            top: 40px; /* بعد منطقة المقبض */
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(5px);
             z-index: 15;
@@ -571,19 +568,19 @@
 
             .header-title h1 { font-size: 16px; }
             
+            /* إخفاء الصورة الرمزية لتوفير المساحة */
             .user-avatar { display: none; }
 
             .floating-toolbar {
-                top: 60%;
+                top: 60%; /* تحريك الأدوات للأسفل قليلاً لتفادي تداخلها مع البحث */
                 left: 16px;
             }
 
             .result-panel {
                 border-radius: 20px 20px 0 0;
-                /* تعديل 3: تقليل الارتفاع في الموبايل لترك مسافة كبيرة للهيدر والبحث */
-                max-height: calc(100vh - 160px); 
             }
             
+            /* تحسين شكل الأزرار في الموبايل */
             .query-btn {
                 height: 54px;
                 font-size: 15px;
@@ -1005,22 +1002,25 @@
             handle.addEventListener('touchstart', e => { 
                 startY = e.touches[0].clientY; 
                 dragging = true; 
-            }, {passive: false});
+            }, {passive: false}); // passive: false is critical for preventDefault
 
             handle.addEventListener('touchmove', e => {
                 if (!dragging) return;
                 endY = e.touches[0].clientY;
                 const delta = endY - startY;
                 
-                // إذا كان السحب للأسفل (إغلاق)
+                // If dragging DOWN (positive delta) -> we are closing/peeking
                 if (delta > 0) {
-                    e.preventDefault();
+                    e.preventDefault(); // Stop Pull-to-Refresh
                     panel.style.transform = `translateY(${delta}px)`; 
                     panel.style.transition = 'none'; 
                 } 
-                // إذا كان السحب للأعلى (فتح)
+                // If dragging UP (negative delta) AND panel is in peek mode -> we are opening
                 else if (delta < 0 && panel.classList.contains('peek')) {
                     e.preventDefault();
+                    // Move it upwards visually (e.g. from 100% to 0%)
+                    // Note: 'peek' has a transform already, so we adjust relative to it
+                    // Simple logic: remove peek and transition to show
                 }
             }, {passive: false});
 
@@ -1029,13 +1029,13 @@
                 dragging = false;
                 const delta = endY - startY;
                 panel.style.transition = 'transform 0.4s cubic-bezier(0.25, 1, 0.5, 1)';
-                panel.style.transform = ''; 
+                panel.style.transform = ''; // Clear manual transform
                 
-                // شرط الإغلاق
+                // Swipe Down Logic (Close)
                 if (delta > 50) {
                     closePanel();
                 }
-                // شرط الفتح
+                // Swipe Up Logic (Open from peek)
                 else if (delta < -30 && panel.classList.contains('peek')) {
                     panel.classList.remove('peek');
                     panel.classList.add('show');
@@ -1043,7 +1043,7 @@
                 startY = 0; endY = 0;
             });
 
-            // النقر للفتح/الإغلاق
+            // Tap on handle to toggle
             handle.addEventListener('click', () => {
                 if (panel.classList.contains('peek')) { 
                     panel.classList.remove('peek'); 
