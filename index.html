@@ -1,5 +1,3 @@
-[file name]: alexandria-fixed.html
-[file content begin]
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -61,7 +59,7 @@
             left: 0;
             right: 0;
             z-index: 50;
-            background: rgba(255, 255, 255, 0.7);
+            background: rgba(255, 255, 255, 0.85); /* زيادة التعتيم قليلاً للوضوح */
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.2);
@@ -69,6 +67,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            transition: all 0.3s ease;
         }
 
         .header-left {
@@ -252,7 +251,9 @@
         /* PULSE BUTTON */
         .query-button-wrapper {
             pointer-events: auto;
-            margin-bottom: 32px;
+            /* EDIT 3: رفع الزر للأعلى قليلاً لتجنب تغطيته بالقائمة المصغرة */
+            margin-bottom: 90px; 
+            transition: margin-bottom 0.3s ease;
         }
 
         .query-btn {
@@ -610,249 +611,93 @@
 
         /* ========== تنسيقات الطباعة (التقرير الرسمي) ========== */
         @media print {
-            /* إخفاء واجهة التطبيق بالكامل */
-            body > *:not(#printReportTemplate) {
-                display: none !important;
-            }
-
-            /* إعدادات ورقة A4 */
-            @page {
-                size: A4;
-                margin: 10mm;
-            }
-
-            body {
-                background: white;
-                height: auto;
-                overflow: visible;
-            }
-
-            /* إظهار قالب التقرير */
+            body > *:not(#printReportTemplate) { display: none !important; }
+            @page { size: A4; margin: 10mm; }
+            body { background: white; height: auto; overflow: visible; }
             #printReportTemplate {
-                display: block !important;
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                background: white;
-                z-index: 9999;
-                direction: rtl;
-                font-family: 'Cairo', sans-serif;
-                color: #000;
+                display: block !important; position: absolute; top: 0; left: 0; width: 100%;
+                background: white; z-index: 9999; direction: rtl; font-family: 'Cairo', sans-serif; color: #000;
             }
-
-            .report-header {
-                border-bottom: 3px double #333;
-                padding-bottom: 20px;
-                margin-bottom: 30px;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            }
-
-            .report-title h1 {
-                font-size: 22pt;
-                margin: 0;
-            }
-
-            .report-table {
-                width: 100%;
-                border-collapse: collapse;
-                margin: 20px 0;
-                font-size: 12pt;
-            }
-
-            .report-table th, .report-table td {
-                border: 1px solid #999;
-                padding: 10px;
-                text-align: right;
-            }
-
-            .report-table th {
-                background-color: #f0f0f0 !important;
-                width: 30%;
-                font-weight: bold;
-                -webkit-print-color-adjust: exact;
-            }
-
-            /* تنسيق خاص لقسم الإيجار في الطباعة */
-            .rent-print-section {
-                margin-top: 30px;
-                border: 2px solid #000;
-                border-radius: 8px;
-                padding: 15px;
-                page-break-inside: avoid;
-            }
-
-            .rent-print-title {
-                background: #000;
-                color: #fff !important;
-                padding: 5px 10px;
-                display: inline-block;
-                border-radius: 4px;
-                margin-bottom: 15px;
-                font-weight: bold;
-                -webkit-print-color-adjust: exact;
-            }
-
-            /* إزالة الخلفيات الملونة للنصوص لتوفير الحبر وزيادة الوضوح */
-            .print-result-row {
-                border-bottom: 1px solid #ccc;
-                margin-bottom: 5px;
-                padding-bottom: 5px;
-                display: flex;
-                justify-content: space-between;
-            }
-            
-            .print-year-badge {
-                border: 1px solid #000;
-                background: none;
-                padding: 2px 6px;
-                border-radius: 3px;
-                font-size: 10px;
-            }
-
-            .footer {
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                text-align: center;
-                font-size: 9pt;
-                border-top: 1px solid #ccc;
-                padding-top: 10px;
-            }
+            .report-header { border-bottom: 3px double #333; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
+            .report-title h1 { font-size: 22pt; margin: 0; }
+            .report-table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 12pt; }
+            .report-table th, .report-table td { border: 1px solid #999; padding: 10px; text-align: right; }
+            .report-table th { background-color: #f0f0f0 !important; width: 30%; font-weight: bold; -webkit-print-color-adjust: exact; }
+            .rent-print-section { margin-top: 30px; border: 2px solid #000; border-radius: 8px; padding: 15px; page-break-inside: avoid; }
+            .rent-print-title { background: #000; color: #fff !important; padding: 5px 10px; display: inline-block; border-radius: 4px; margin-bottom: 15px; font-weight: bold; -webkit-print-color-adjust: exact; }
+            .print-result-row { border-bottom: 1px solid #ccc; margin-bottom: 5px; padding-bottom: 5px; display: flex; justify-content: space-between; }
+            .print-year-badge { border: 1px solid #000; background: none; padding: 2px 6px; border-radius: 3px; font-size: 10px; }
+            .footer { position: fixed; bottom: 0; left: 0; right: 0; text-align: center; font-size: 9pt; border-top: 1px solid #ccc; padding-top: 10px; }
         }
-
-        /* إخفاء القالب في الوضع العادي */
-        #printReportTemplate {
-            display: none;
-        }
+        #printReportTemplate { display: none; }
 
         /* ========== LOADING OVERLAY ========== */
         .loading-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(246, 248, 246, 0.95);
-            z-index: 100;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 20px;
-            transition: opacity 0.3s ease;
+            position: fixed; inset: 0; background: rgba(246, 248, 246, 0.95); z-index: 100;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; transition: opacity 0.3s ease;
         }
-
-        .loading-overlay.hide {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .loader {
-            width: 50px;
-            height: 50px;
-            border: 4px solid #e5e7eb;
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        .loading-text {
-            font-size: 16px;
-            color: var(--text-secondary);
-            font-weight: 600;
-        }
+        .loading-overlay.hide { opacity: 0; pointer-events: none; }
+        .loader { width: 50px; height: 50px; border: 4px solid #e5e7eb; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+        .loading-text { font-size: 16px; color: var(--text-secondary); font-weight: 600; }
 
         /* ========== NOT FOUND ========== */
-        .not-found {
-            text-align: center;
-            padding: 40px 20px;
-        }
+        .not-found { text-align: center; padding: 40px 20px; }
+        .not-found-icon { font-size: 64px; margin-bottom: 16px; opacity: 0.5; }
+        .not-found-text { font-size: 18px; color: var(--text-secondary); margin-bottom: 8px; font-weight: 600; }
+        .not-found-hint { font-size: 14px; color: #9ca3af; }
 
-        .not-found-icon {
-            font-size: 64px;
-            margin-bottom: 16px;
-            opacity: 0.5;
-        }
-
-        .not-found-text {
-            font-size: 18px;
-            color: var(--text-secondary);
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-
-        .not-found-hint {
-            font-size: 14px;
-            color: #9ca3af;
-        }
-
-        /* ========== RESPONSIVE ========== */
+        /* ========== RESPONSIVE (EDIT 1: Mobile Header Fix) ========== */
         @media (max-width: 768px) {
             .glass-header {
+                /* السماح بلف العناصر لتظهر في أكثر من سطر */
+                flex-wrap: wrap; 
+                height: auto;
                 padding: 12px 16px;
+                gap: 12px;
+            }
+
+            .header-left {
+                width: 100%; /* اللوجو يأخذ السطر الأول بالكامل */
+                justify-content: space-between;
+            }
+
+            .header-right {
+                width: 100%; /* البحث يأخذ السطر الثاني بالكامل */
+                justify-content: center;
             }
 
             .search-box {
-                display: none;
+                /* إجبار الظهور في الموبايل */
+                display: block !important; 
+                width: 100%;
             }
 
-            .header-title h1 {
-                font-size: 16px;
+            .search-box input {
+                width: 100%; /* عرض كامل للشاشة */
             }
 
-            .floating-toolbar {
-                left: 16px;
-            }
-
-            .query-btn {
-                font-size: 16px;
-                padding: 0 24px;
-                height: 56px;
-            }
-
-            .result-panel {
-                max-width: 100%;
-                border-radius: 20px 20px 0 0;
-            }
-
-            .results-grid {
-                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            }
-
-            .input-group {
-                flex-direction: column;
-            }
-
-            .calc-btn {
-                padding: 12px;
-            }
-
-            .panel-header {
-                padding: 0 16px 12px 16px;
-            }
-
-            .results-grid, .rent-calculator {
-                padding: 0 16px;
-            }
+            .header-title h1 { font-size: 16px; }
+            .floating-toolbar { left: 16px; top: 60%; } /* تحريك الأدوات للأسفل قليلاً لتجنب تغطية البحث */
+            .query-btn { font-size: 16px; padding: 0 24px; height: 56px; }
+            .result-panel { max-width: 100%; border-radius: 20px 20px 0 0; }
+            .results-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+            .input-group { flex-direction: column; }
+            .calc-btn { padding: 12px; }
+            .panel-header { padding: 0 16px 12px 16px; }
+            .results-grid, .rent-calculator { padding: 0 16px; }
+            
+            /* إخفاء الصورة الرمزية في الموبايل لتوفير المساحة */
+            .user-avatar { display: none; }
         }
 
         /* ========== LEAFLET CUSTOMIZATION ========== */
         .leaflet-control-container .leaflet-top,
-        .leaflet-control-container .leaflet-bottom {
-            display: none;
-        }
-
-        .leaflet-control-attribution {
-            font-size: 10px;
-            background: rgba(255,255,255,0.8) !important;
-            padding: 2px 6px !important;
-        }
+        .leaflet-control-container .leaflet-bottom { display: none; }
+        .leaflet-control-attribution { font-size: 10px; background: rgba(255,255,255,0.8) !important; padding: 2px 6px !important; }
     </style>
 </head>
 <body>
 
-    <!-- قالب التقرير للطباعة -->
     <div id="printReportTemplate">
         <header class="report-header">
             <div style="text-align: right;">
@@ -905,17 +750,14 @@
         </div>
     </div>
 
-    <!-- LOADING OVERLAY -->
     <div id="loadingOverlay" class="loading-overlay">
         <div class="loader"></div>
         <div class="loading-text">جاري تحميل البيانات...</div>
     </div>
 
-    <!-- MAP -->
     <div id="map"></div>
     <div class="map-gradient-overlay"></div>
 
-    <!-- GLASS HEADER -->
     <header class="glass-header">
         <div class="header-left">
             <div class="gov-logo">
@@ -938,7 +780,6 @@
         </div>
     </header>
 
-    <!-- FLOATING TOOLBAR -->
     <div class="floating-toolbar">
         <div class="zoom-controls">
             <button class="zoom-btn" onclick="map.zoomIn()">
@@ -956,9 +797,7 @@
         </button>
     </div>
 
-    <!-- BOTTOM UI -->
     <div class="bottom-ui">
-        <!-- QUERY BUTTON -->
         <div class="query-button-wrapper">
             <button id="queryBtn" class="query-btn" onclick="checkLocation()" disabled>
                 <span class="pulse-ring"></span>
@@ -967,7 +806,6 @@
             </button>
         </div>
         
-        <!-- GET DATA BUTTON (appears after marker is moved) -->
         <div id="getDataBtnWrapper" class="query-button-wrapper" style="display: none; margin-bottom: 12px;">
             <button class="query-btn" onclick="getDataAtMarker()" style="background: linear-gradient(135deg, #1B5A9A 0%, #0B2F5C 100%); box-shadow: 0 8px 30px rgba(27, 90, 154, 0.3);">
                 <span class="material-symbols-outlined">search</span>
@@ -976,7 +814,6 @@
         </div>
     </div>
 
-    <!-- RESULT PANEL -->
     <div id="resultPanel" class="result-panel">
         <div class="panel-handle-area" id="dragHandle">
             <div class="panel-handle"></div>
@@ -997,8 +834,7 @@
         </div>
         
         <div id="resultsGrid" class="results-grid">
-            <!-- Cards will be inserted here -->
-        </div>
+            </div>
     </div>
 
     <script>
@@ -1006,7 +842,6 @@
         // CONFIGURATION
         // ============================================================
         const CONFIG = {
-            // Cloudflare Worker API URL
             apiUrl: 'https://blue-base-7710.olivesom3a.workers.dev',
             initialCenter: [31.215, 29.960],
             initialZoom: 13,
@@ -1068,7 +903,7 @@
         }
 
         // ============================================================
-        // MAP INITIALIZATION (تحديث لإخفاء البطاقة عند التحرك)
+        // MAP INITIALIZATION
         // ============================================================
         function initMap() {
             map = L.map('map', {
@@ -1095,21 +930,18 @@
                 draggable: true
             }).addTo(map);
 
-            // Enable click on map to place marker
             map.on('click', function(e) {
                 currentMarker.setLatLng(e.latlng);
                 resetUI();
                 showGetDataButton();
             });
 
-            // Enable marker drag
             currentMarker.on('dragend', function() {
                 resetUI();
                 showGetDataButton();
             });
         }
 
-        // دالة جديدة لتصفير الواجهة عند تغيير المكان
         function resetUI() {
             hasActiveData = false;
             const panel = document.getElementById('resultPanel');
@@ -1118,7 +950,9 @@
             showGetDataButton();
         }
 
-        // Search functionality with Geocoding support
+        // ============================================================
+        // SEARCH & LOCATION
+        // ============================================================
         async function searchLocation() {
             const input = document.getElementById('searchInput');
             const query = input.value.trim();
@@ -1126,14 +960,12 @@
             
             if (!query) return;
 
-            // 1. Try coordinates first (format: lat, lng)
             const coordPattern = /^(-?\d+\.?\d*)[,\s]+(-?\d+\.?\d*)$/;
             const match = query.match(coordPattern);
             
             if (match) {
                 const lat = parseFloat(match[1]);
                 const lng = parseFloat(match[2]);
-                
                 if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
                     updateMapPosition(lat, lng);
                     showGetDataButton();
@@ -1141,39 +973,31 @@
                 }
             }
 
-            // 2. Search by name using Nominatim Geocoding
             const originalIconText = searchIcon.textContent;
             searchIcon.textContent = 'pending';
             
             try {
-                // Focus search on Egypt and Alexandria area
-                const viewbox = "29.4,30.8,30.1,31.3"; // west, south, east, north (Alexandria approx)
-                
+                const viewbox = "29.4,30.8,30.1,31.3";
                 const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=eg&viewbox=${viewbox}&bounded=1&limit=1&addressdetails=1`, {
-                    headers: {
-                        'User-Agent': 'AlexandriaGovPortal/1.0'
-                    }
+                    headers: { 'User-Agent': 'AlexandriaGovPortal/1.0' }
                 });
                 
                 if (!response.ok) throw new Error('Network error');
-                
                 const data = await response.json();
                 
                 if (data && data.length > 0) {
                     const result = data[0];
                     const lat = parseFloat(result.lat);
                     const lng = parseFloat(result.lon);
-                    
                     updateMapPosition(lat, lng);
                     showGetDataButton();
-                    
                     console.log(`✓ تم العثور على: ${result.display_name}`);
                 } else {
-                    showError('لم يتم العثور على عنوان مطابق. يرجى التأكد من الاسم أو استخدام الإحداثيات (مثال: 31.2, 29.9)');
+                    showError('لم يتم العثور على عنوان مطابق.');
                 }
             } catch (error) {
                 console.error('Search error:', error);
-                showError('حدث خطأ أثناء الاتصال بخدمة البحث. يرجى المحاولة مرة أخرى.');
+                showError('حدث خطأ أثناء الاتصال بخدمة البحث.');
             } finally {
                 searchIcon.textContent = originalIconText;
             }
@@ -1185,9 +1009,6 @@
             resetUI();
         }
 
-        // ============================================================
-        // GEOLOCATION
-        // ============================================================
         function locateUser() {
             if (!navigator.geolocation) {
                 showError('المتصفح لا يدعم خاصية تحديد الموقع الجغرافي.');
@@ -1201,41 +1022,19 @@
                 (position) => {
                     const lat = position.coords.latitude;
                     const lng = position.coords.longitude;
-                    
-                    map.setView([lat, lng], CONFIG.locationZoom);
-                    currentMarker.setLatLng([lat, lng]);
-                    
+                    updateMapPosition(lat, lng);
                     btn.classList.remove('loading');
                     resetUI();
                     showGetDataButton();
                 },
                 (error) => {
                     btn.classList.remove('loading');
-                    
-                    let errorMessage = 'تعذر تحديد الموقع. ';
-                    switch(error.code) {
-                        case error.PERMISSION_DENIED:
-                            errorMessage += 'يرجى السماح بالوصول إلى الموقع من إعدادات المتصفح.';
-                            break;
-                        case error.POSITION_UNAVAILABLE:
-                            errorMessage += 'معلومات الموقع غير متاحة حالياً.';
-                            break;
-                        case error.TIMEOUT:
-                            errorMessage += 'انتهت مهلة الطلب. حاول مرة أخرى.';
-                            break;
-                        default:
-                            errorMessage += 'حدث خطأ غير معروف.';
-                    }
-                    showError(errorMessage);
+                    showError('تعذر تحديد الموقع.');
                 }
             );
         }
 
-        // ============================================================
-        // LOCATION CHECK
-        // ============================================================
         async function checkLocation() {
-            // Get current location via GPS
             if (!navigator.geolocation) {
                 showError('المتصفح لا يدعم خاصية تحديد الموقع الجغرافي.');
                 return;
@@ -1251,50 +1050,25 @@
                 (gpsPosition) => {
                     const lat = gpsPosition.coords.latitude;
                     const lng = gpsPosition.coords.longitude;
+                    updateMapPosition(lat, lng);
                     
-                    // Update map and marker
-                    map.setView([lat, lng], CONFIG.locationZoom);
-                    currentMarker.setLatLng([lat, lng]);
-                    
-                    // Reset button
                     btn.disabled = false;
                     btnText.textContent = 'تحديد موقعي الحالي';
-                    
-                    // Show "Get Data" button
                     showGetDataButton();
-                    
-                    // Reset panel
                     resetUI();
                 },
                 (error) => {
                     btn.disabled = false;
                     btnText.textContent = 'تحديد موقعي الحالي';
-                    
-                    let errorMessage = 'تعذر تحديد الموقع. ';
-                    switch(error.code) {
-                        case error.PERMISSION_DENIED:
-                            errorMessage += 'يرجى السماح بالوصول إلى الموقع من إعدادات المتصفح.';
-                            break;
-                        case error.POSITION_UNAVAILABLE:
-                            errorMessage += 'معلومات الموقع غير متاحة حالياً.';
-                            break;
-                        case error.TIMEOUT:
-                            errorMessage += 'انتهت مهلة الطلب. حاول مرة أخرى.';
-                            break;
-                        default:
-                            errorMessage += 'حدث خطأ غير معروف.';
-                    }
-                    showError(errorMessage);
+                    showError('تعذر تحديد الموقع.');
                 }
             );
         }
 
-        // New function to get data at current marker position
         async function getDataAtMarker() {
             const position = currentMarker.getLatLng();
             const getDataBtn = document.getElementById('getDataBtnWrapper');
             
-            // Show loading state
             const originalHTML = getDataBtn.innerHTML;
             getDataBtn.innerHTML = `
                 <button class="query-btn" disabled style="background: linear-gradient(135deg, #1B5A9A 0%, #0B2F5C 100%);">
@@ -1304,21 +1078,17 @@
             `;
 
             try {
-                // Use Cloudflare API only
                 const result = await checkLocationAPI(position.lat, position.lng);
-                
                 updateCoordinates(position);
                 showResult(result);
-                
             } catch (error) {
                 console.error('Error getting data:', error);
-                showError('تعذر الحصول على البيانات. يرجى المحاولة مرة أخرى.');
+                showError('تعذر الحصول على البيانات.');
             } finally {
                 getDataBtn.innerHTML = originalHTML;
             }
         }
 
-        // Show/hide "Get Data" button
         function showGetDataButton() {
             document.getElementById('getDataBtnWrapper').style.display = 'block';
         }
@@ -1328,7 +1098,7 @@
         }
 
         // ============================================================
-        // RESULT DISPLAY (تحديث)
+        // RESULT DISPLAY
         // ============================================================
         function updateCoordinates(position) {
             const coords = document.getElementById('coordinates');
@@ -1342,102 +1112,58 @@
             if (data && data.status === 'success') {
                 const districtName = data.district || "غير محدد";
                 const districtType = data.type || "غير معلوم";
-                
-                // حفظ النوع لاستخدامه في الحساب
                 currentDistrictType = districtType;
 
-                // تحديد التصنيف للعرض
                 let classification = "غير محدد";
                 let classificationEn = "Unclassified";
                 
                 if (districtType.includes('اقتصادي') || districtType.includes('شعبي')) {
-                    classification = "اقتصادي (شعبي)";
-                    classificationEn = "Economic";
+                    classification = "اقتصادي (شعبي)"; classificationEn = "Economic";
                 } else if (districtType.includes('متوسط')) {
-                    classification = "متوسط";
-                    classificationEn = "Medium";
+                    classification = "متوسط"; classificationEn = "Medium";
                 } else if (districtType.includes('مميز') || districtType.includes('راقي')) {
-                    classification = "مميز";
-                    classificationEn = "Premium";
+                    classification = "مميز"; classificationEn = "Premium";
                 } else if (districtType.includes('سكن')) {
-                    classification = "سكني";
-                    classificationEn = "Residential";
+                    classification = "سكني"; classificationEn = "Residential";
                 } else {
-                    classification = districtType;
-                    classificationEn = "Custom";
+                    classification = districtType; classificationEn = "Custom";
                 }
                 
-                // بناء واجهة النتائج + الآلة الحاسبة
                 grid.innerHTML = `
                     <div class="result-card">
-                        <div class="card-header">
-                            <span class="material-symbols-outlined">account_balance</span>
-                            <span class="card-label">الحي</span>
-                        </div>
-                        <div class="card-content">
-                            <div class="card-value">حي ${districtName}</div>
-                        </div>
+                        <div class="card-header"><span class="material-symbols-outlined">account_balance</span><span class="card-label">الحي</span></div>
+                        <div class="card-content"><div class="card-value">حي ${districtName}</div></div>
                     </div>
-                    
                     <div class="result-card">
-                        <div class="card-header">
-                            <span class="material-symbols-outlined">category</span>
-                            <span class="card-label">التصنيف</span>
-                        </div>
-                        <div class="card-content">
-                            <div class="card-value">${classification}</div>
-                            <div class="card-value-ar">${classificationEn}</div>
-                        </div>
+                        <div class="card-header"><span class="material-symbols-outlined">category</span><span class="card-label">التصنيف</span></div>
+                        <div class="card-content"><div class="card-value">${classification}</div><div class="card-value-ar">${classificationEn}</div></div>
                     </div>
-                    
                     <div class="result-card">
-                        <div class="card-header">
-                            <span class="material-symbols-outlined">verified</span>
-                            <span class="card-label">الحالة</span>
-                        </div>
-                        <div class="card-content">
-                            <div class="card-value success">مطابق</div>
-                        </div>
+                        <div class="card-header"><span class="material-symbols-outlined">verified</span><span class="card-label">الحالة</span></div>
+                        <div class="card-content"><div class="card-value success">مطابق</div></div>
                     </div>
-
                     <div class="rent-calculator" style="grid-column: 1 / -1;">
-                        <div class="calc-title">
-                            <span class="material-symbols-outlined">calculate</span>
-                            حاسبة الإيجار القديم
-                        </div>
-                        <div style="font-size: 12px; color: #666; margin-bottom: 10px;">
-                            أدخل القيمة الإيجارية الحالية (في العقد) لحساب الزيادة القانونية المقررة لهذه المنطقة (${classification}).
-                        </div>
-                        
+                        <div class="calc-title"><span class="material-symbols-outlined">calculate</span>حاسبة الإيجار القديم</div>
+                        <div style="font-size: 12px; color: #666; margin-bottom: 10px;">أدخل القيمة الإيجارية الحالية (في العقد) لحساب الزيادة القانونية المقررة لهذه المنطقة (${classification}).</div>
                         <div class="input-group">
                             <input type="number" id="currentRentInput" class="rent-input" placeholder="القيمة الحالية (جنية)" onkeypress="if(event.key === 'Enter') calculateRent()">
                             <button class="calc-btn" onclick="calculateRent()">احسب</button>
                         </div>
-
-                        <div id="calcOutput" class="calc-results">
-                        </div>
+                        <div id="calcOutput" class="calc-results"></div>
                     </div>
                 `;
                 
-                // تحديد أن لدينا بيانات نشطة الآن
                 hasActiveData = true;
-                
-                // إخفاء زر "الحصول على البيانات" لأننا بالفعل نعرضها
                 hideGetDataButton();
-                
-                // إظهار البطاقة كاملة
                 panel.classList.remove('peek');
                 panel.classList.add('show');
             } else {
-                // حالة عدم العثور على نتائج
                 grid.innerHTML = `
                     <div class="not-found" style="grid-column: 1 / -1;">
                         <div class="not-found-icon">📍</div>
                         <div class="not-found-text">الموقع خارج نطاق التغطية</div>
-                        <div class="not-found-hint">يرجى التأكد من اختيار موقع داخل حدود الأحياء المسجلة</div>
                     </div>
                 `;
-                
                 hasActiveData = true;
                 panel.classList.remove('peek');
                 panel.classList.add('show');
@@ -1445,7 +1171,7 @@
         }
 
         // ============================================================
-        // RENT CALCULATION LOGIC (محدث)
+        // RENT CALCULATION LOGIC
         // ============================================================
         function calculateRent() {
             const input = document.getElementById('currentRentInput');
@@ -1462,13 +1188,9 @@
             let typeName = "منطقة اقتصادية";
 
             if (currentDistrictType.includes('مميز') || currentDistrictType.includes('راقي')) {
-                multiplier = 20;
-                minRent = 1000;
-                typeName = "منطقة متميزة";
+                multiplier = 20; minRent = 1000; typeName = "منطقة متميزة";
             } else if (currentDistrictType.includes('متوسط')) {
-                multiplier = 10;
-                minRent = 400;
-                typeName = "منطقة متوسطة";
+                multiplier = 10; minRent = 400; typeName = "منطقة متوسطة";
             }
 
             let calculatedBase = currentRent * multiplier;
@@ -1482,165 +1204,37 @@
                 rent = rent * 1.15;
             }
 
-            // تم إضافة كلاس 'data-value' لتسهيل الطباعة
             output.innerHTML = `
                 <div style="border-bottom: 1px dashed #ccc; padding-bottom: 10px; margin-bottom: 10px;">
-                    <div class="result-row">
-                        <span>نوع المنطقة المطبق:</span>
-                        <strong class="data-value">${typeName}</strong>
-                    </div>
-                    <div class="result-row">
-                        <span>القيمة الحالية:</span>
-                        <span class="data-value">${currentRent.toFixed(0)} ج.م</span>
-                    </div>
-                    <div class="result-row">
-                        <span>معادلة الحساب:</span>
-                        <span class="data-value">${appliedRule} (${multiplier}x)</span>
-                    </div>
+                    <div class="result-row"><span>نوع المنطقة المطبق:</span><strong class="data-value">${typeName}</strong></div>
+                    <div class="result-row"><span>القيمة الحالية:</span><span class="data-value">${currentRent.toFixed(0)} ج.م</span></div>
+                    <div class="result-row"><span>معادلة الحساب:</span><span class="data-value">${appliedRule} (${multiplier}x)</span></div>
                 </div>
-
                 <div style="font-weight: bold; margin-bottom: 8px; font-size: 13px;">تدرج القيمة الإيجارية (زيادة 15% سنوياً):</div>
-                
-                <div class="result-row year-row">
-                    <span><span class="year-badge">السنة 1</span> الإيجار الجديد</span>
-                    <strong class="data-value" style="color: #059669">${years[0]} ج.م</strong>
-                </div>
-                <div class="result-row year-row">
-                    <span><span class="year-badge">السنة 2</span></span>
-                    <span class="data-value">${years[1]} ج.م</span>
-                </div>
-                <div class="result-row year-row">
-                    <span><span class="year-badge">السنة 3</span></span>
-                    <span class="data-value">${years[2]} ج.م</span>
-                </div>
-                <div class="result-row year-row">
-                    <span><span class="year-badge">السنة 4</span></span>
-                    <span class="data-value">${years[3]} ج.م</span>
-                </div>
-                <div class="result-row year-row">
-                    <span><span class="year-badge">السنة 5</span></span>
-                    <span class="data-value">${years[4]} ج.م</span>
-                </div>
-                
-                <div style="font-size: 10px; color: #888; margin-top: 10px; text-align: center;">
-                    * الأرقام تقريبية (جبر الكسور) لأقرب جنيه صحيح.
-                </div>
+                <div class="result-row year-row"><span><span class="year-badge">السنة 1</span> الإيجار الجديد</span><strong class="data-value" style="color: #059669">${years[0]} ج.م</strong></div>
+                <div class="result-row year-row"><span><span class="year-badge">السنة 2</span></span><span class="data-value">${years[1]} ج.م</span></div>
+                <div class="result-row year-row"><span><span class="year-badge">السنة 3</span></span><span class="data-value">${years[2]} ج.م</span></div>
+                <div class="result-row year-row"><span><span class="year-badge">السنة 4</span></span><span class="data-value">${years[3]} ج.م</span></div>
+                <div class="result-row year-row"><span><span class="year-badge">السنة 5</span></span><span class="data-value">${years[4]} ج.م</span></div>
+                <div style="font-size: 10px; color: #888; margin-top: 10px; text-align: center;">* الأرقام تقريبية لأقرب جنيه صحيح.</div>
             `;
-
             output.classList.add('show');
         }
 
-        // تحديث دالة الإغلاق (الذكية)
+        // ============================================================
+        // SMART SWIPE LOGIC (EDIT 2: Swipe Up Enabled)
+        // ============================================================
         function closePanel() {
             const panel = document.getElementById('resultPanel');
-            
             if (hasActiveData) {
-                // إذا كان لدينا بيانات، لا نخفيها تماماً بل نصغرها (Peek)
                 panel.classList.remove('show');
                 panel.classList.add('peek');
             } else {
-                // إذا لم يكن هناك بيانات، إخفاء تام
                 panel.classList.remove('show');
                 panel.classList.remove('peek');
             }
         }
 
-        function showError(message) {
-            alert(message);
-        }
-
-        function exportReport() {
-            // 1. التحقق من وجود نتائج
-            const districtElem = document.querySelector('#resultsGrid .result-card:nth-child(1) .card-value');
-            if (!districtElem) {
-                showError('يرجى إجراء استعلام وتحديد موقع أولاً.');
-                return;
-            }
-
-            // 2. تعبئة البيانات الأساسية
-            const now = new Date();
-            document.getElementById('printDate').textContent = now.toLocaleDateString('ar-EG');
-            document.getElementById('printRef').textContent = 'REF-' + Math.floor(Math.random() * 1000000);
-            
-            document.getElementById('printDistrict').textContent = districtElem.textContent;
-            document.getElementById('printType').textContent = document.querySelector('#resultsGrid .result-card:nth-child(2) .card-value').textContent;
-            document.getElementById('printCoords').textContent = document.getElementById('coordinates').textContent;
-
-            // 3. معالجة قسم الإيجار
-            const calcOutput = document.getElementById('calcOutput');
-            const printRentSection = document.getElementById('printRentSection');
-            const printRentData = document.getElementById('printRentData');
-
-            if (calcOutput && calcOutput.innerHTML.trim() !== "" && calcOutput.classList.contains('show')) {
-                printRentSection.style.display = 'block';
-                
-                // استخراج البيانات بدقة باستخدام الكلاسات الجديدة
-                // 1. البيانات الأساسية (أول 3 صفوف)
-                const allRows = calcOutput.querySelectorAll('.result-row');
-                let typeName = "غير محدد";
-                let currentValue = "0 ج.م";
-                let calculationRule = "غير محدد";
-                
-                if (allRows.length >= 3) {
-                    typeName = allRows[0].querySelector('.data-value').textContent;
-                    currentValue = allRows[1].querySelector('.data-value').textContent;
-                    calculationRule = allRows[2].querySelector('.data-value').textContent;
-                }
-                
-                // 2. بيانات السنوات (الصفوف التي تحتوي على كلاس year-row)
-                const yearRows = calcOutput.querySelectorAll('.year-row');
-                let yearsHtml = '';
-                
-                yearRows.forEach((row, index) => {
-                    const yearNum = index + 1; // رقم السنة
-                    const moneyValue = row.querySelector('.data-value').textContent; // القيمة المالية
-                    
-                    yearsHtml += `
-                        <div class="print-result-row">
-                            <span><span class="print-year-badge">السنة ${yearNum}</span></span>
-                            <span><strong>${moneyValue}</strong></span>
-                        </div>
-                    `;
-                });
-
-                // بناء قالب الطباعة النهائي
-                printRentData.innerHTML = `
-                    <div style="margin-bottom: 15px; border-bottom: 1px dashed #ccc; padding-bottom: 10px;">
-                        <div class="print-result-row">
-                            <span><strong>نوع المنطقة:</strong></span>
-                            <span>${typeName}</span>
-                        </div>
-                        <div class="print-result-row">
-                            <span><strong>القيمة الحالية:</strong></span>
-                            <span>${currentValue}</span>
-                        </div>
-                        <div class="print-result-row">
-                            <span><strong>قاعدة الحساب:</strong></span>
-                            <span>${calculationRule}</span>
-                        </div>
-                    </div>
-                    
-                    <div style="margin-top: 10px;">
-                        <div style="font-weight: bold; margin-bottom: 10px; text-decoration: underline;">جدول تدرج القيمة الإيجارية:</div>
-                        ${yearsHtml}
-                    </div>
-                    <div style="font-size: 9px; color: #666; margin-top: 15px; text-align: center;">
-                        * الأرقام تقريبية لأقرب جنيه صحيح.
-                    </div>
-                `;
-
-            } else {
-                printRentSection.style.display = 'none';
-            }
-
-            setTimeout(() => {
-                window.print();
-            }, 100);
-        }
-
-        // ============================================================
-        // SMART SWIPE LOGIC (تحديث للتفاعل مع Peek)
-        // ============================================================
         function initPanelSwipe() {
             const panel = document.getElementById('resultPanel');
             const handle = document.getElementById('dragHandle');
@@ -1648,7 +1242,7 @@
             let touchStartY = 0;
             let touchEndY = 0;
             let isDragging = false;
-            const DRAG_THRESHOLD = 80;
+            const DRAG_THRESHOLD = 50; // حساسية السحب
 
             handle.addEventListener('touchstart', (e) => {
                 touchStartY = e.touches[0].clientY;
@@ -1661,7 +1255,8 @@
                 touchEndY = e.touches[0].clientY;
                 const deltaY = touchEndY - touchStartY;
                 
-                if (deltaY > 0) { // سحب للأسفل
+                // السماح بالسحب للأسفل فقط
+                if (deltaY > 0) {
                     e.preventDefault();
                     panel.style.transform = `translateY(${deltaY}px)`;
                     panel.style.transition = 'none';
@@ -1677,12 +1272,15 @@
                 panel.style.transition = 'transform 0.4s cubic-bezier(0.25, 1, 0.5, 1)';
                 panel.style.transform = '';
 
+                // سحب للأسفل (إغلاق)
                 if (deltaY > DRAG_THRESHOLD) {
-                    closePanel(); // سيتحول إلى Peek
-                } else {
-                    // العودة للوضع الطبيعي
-                    if (panel.classList.contains('show')) {
-                        panel.style.transform = ''; 
+                    closePanel();
+                } 
+                // سحب للأعلى (فتح) - (EDIT 2: Logic for opening)
+                else if (deltaY < -DRAG_THRESHOLD) {
+                    if (panel.classList.contains('peek')) {
+                        panel.classList.remove('peek');
+                        panel.classList.add('show');
                     }
                 }
                 
@@ -1690,27 +1288,64 @@
                 touchEndY = 0;
             });
 
-            // التعامل مع النقر على المقبض
             handle.addEventListener('click', () => {
-                // إذا كانت مصغرة -> افتحها
                 if (panel.classList.contains('peek')) {
                     panel.classList.remove('peek');
                     panel.classList.add('show');
-                } 
-                // إذا كانت مفتوحة -> صغرها
-                else if (panel.classList.contains('show')) {
+                } else if (panel.classList.contains('show')) {
                     closePanel();
                 }
             });
         }
 
-        // ============================================================
-        // INITIALIZATION
-        // ============================================================
+        function showError(message) { alert(message); }
+
+        function exportReport() {
+            const districtElem = document.querySelector('#resultsGrid .result-card:nth-child(1) .card-value');
+            if (!districtElem) { showError('يرجى إجراء استعلام أولاً.'); return; }
+
+            const now = new Date();
+            document.getElementById('printDate').textContent = now.toLocaleDateString('ar-EG');
+            document.getElementById('printRef').textContent = 'REF-' + Math.floor(Math.random() * 1000000);
+            document.getElementById('printDistrict').textContent = districtElem.textContent;
+            document.getElementById('printType').textContent = document.querySelector('#resultsGrid .result-card:nth-child(2) .card-value').textContent;
+            document.getElementById('printCoords').textContent = document.getElementById('coordinates').textContent;
+
+            const calcOutput = document.getElementById('calcOutput');
+            const printRentSection = document.getElementById('printRentSection');
+            const printRentData = document.getElementById('printRentData');
+
+            if (calcOutput && calcOutput.innerHTML.trim() !== "" && calcOutput.classList.contains('show')) {
+                printRentSection.style.display = 'block';
+                const allRows = calcOutput.querySelectorAll('.result-row');
+                let typeName = allRows[0].querySelector('.data-value').textContent;
+                let currentValue = allRows[1].querySelector('.data-value').textContent;
+                let calculationRule = allRows[2].querySelector('.data-value').textContent;
+                
+                let yearsHtml = '';
+                const yearRows = calcOutput.querySelectorAll('.year-row');
+                yearRows.forEach((row, index) => {
+                    yearsHtml += `<div class="print-result-row"><span><span class="print-year-badge">السنة ${index + 1}</span></span><span><strong>${row.querySelector('.data-value').textContent}</strong></span></div>`;
+                });
+
+                printRentData.innerHTML = `
+                    <div style="margin-bottom: 15px; border-bottom: 1px dashed #ccc; padding-bottom: 10px;">
+                        <div class="print-result-row"><span><strong>نوع المنطقة:</strong></span><span>${typeName}</span></div>
+                        <div class="print-result-row"><span><strong>القيمة الحالية:</strong></span><span>${currentValue}</span></div>
+                        <div class="print-result-row"><span><strong>قاعدة الحساب:</strong></span><span>${calculationRule}</span></div>
+                    </div>
+                    <div style="margin-top: 10px;"><div style="font-weight: bold; margin-bottom: 10px; text-decoration: underline;">جدول تدرج القيمة الإيجارية:</div>${yearsHtml}</div>
+                    <div style="font-size: 9px; color: #666; margin-top: 15px; text-align: center;">* الأرقام تقريبية لأقرب جنيه صحيح.</div>
+                `;
+            } else {
+                printRentSection.style.display = 'none';
+            }
+            setTimeout(() => { window.print(); }, 100);
+        }
+
         initMap();
         loadGeoData();
         initPanelSwipe();
     </script>
 </body>
 </html>
-[file content end]
