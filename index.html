@@ -136,6 +136,10 @@
             background: rgba(255, 255, 255, 0.9);
             box-shadow: 0 0 0 2px var(--primary);
         }
+        .search-box input:focus-visible {
+            outline: 3px solid rgba(19, 236, 91, 0.45);
+            outline-offset: 2px;
+        }
 
         .search-box .material-symbols-outlined {
             position: absolute;
@@ -193,6 +197,10 @@
             justify-content: center;
             transition: all 0.2s ease;
             color: #4b5563;
+        }
+        .zoom-btn:focus-visible, .tool-btn:focus-visible {
+            outline: 3px solid rgba(19, 236, 91, 0.45);
+            outline-offset: 2px;
         }
 
         .zoom-btn:hover, .tool-btn:hover {
@@ -270,6 +278,18 @@
             color: #9ca3af;
             box-shadow: none;
         }
+        .query-btn:focus-visible {
+            outline: 3px solid rgba(19, 236, 91, 0.45);
+            outline-offset: 3px;
+        }
+        .query-btn.alt {
+            background: linear-gradient(135deg, #1B5A9A 0%, #0B2F5C 100%);
+            color: #fff;
+        }
+        .query-btn.alt:disabled {
+            background: #cbd5e1;
+            color: #64748b;
+        }
 
         .query-btn .pulse-ring {
             position: absolute;
@@ -310,9 +330,20 @@
             
             transform: translateY(105%);
             transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            will-change: transform;
             
             z-index: 1000; /* تحت الهيدر */
             padding-bottom: 30px;
+        }
+        .result-panel::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 28px;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.9), rgba(255,255,255,0));
+            pointer-events: none;
         }
 
         .result-panel.show {
@@ -320,7 +351,7 @@
         }
 
         .result-panel.peek {
-            transform: translateY(calc(100% - 40px));
+            transform: translateY(calc(100% - 52px));
             background: #fff;
             cursor: pointer;
         }
@@ -335,10 +366,13 @@
             display: flex;
             justify-content: center;
             border-bottom: 1px solid transparent;
-            height: 40px; 
+            height: 52px; 
+            touch-action: none;
         }
 
         .panel-handle-area:active { cursor: grabbing; background: #f9f9f9; }
+        .result-panel.dragging { transition: none; }
+        .result-panel.spring { transition: transform 0.55s cubic-bezier(0.18, 0.89, 0.32, 1.2); }
 
         .panel-handle {
             width: 40px;
@@ -349,7 +383,7 @@
 
         .panel-header {
             position: sticky;
-            top: 40px;
+            top: 52px;
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(5px);
             z-index: 15;
@@ -407,12 +441,50 @@
             font-weight: 700;
             cursor: pointer;
         }
+        .export-btn:focus-visible {
+            outline: 3px solid rgba(19, 236, 91, 0.45);
+            outline-offset: 2px;
+        }
 
         .results-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 16px;
             padding: 0 24px 16px 24px;
+        }
+        .full-span { grid-column: 1 / -1; }
+        .help-text { font-size: 12px; color: #666; margin-bottom: 10px; }
+        .calc-block { border-bottom: 1px dashed #ccc; padding-bottom: 10px; margin-bottom: 10px; }
+        .calc-section-title { font-weight: bold; margin-bottom: 8px; font-size: 13px; }
+        .print-block { margin-bottom: 15px; border-bottom: 1px dashed #ccc; padding-bottom: 10px; }
+        .print-section { margin-top: 10px; }
+        .print-section-title { font-weight: bold; margin-bottom: 10px; }
+
+        .skeleton-card {
+            background: #eef2f7;
+            border: 1px solid rgba(0,0,0,0.04);
+            border-radius: 16px;
+            padding: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+        .skeleton-line {
+            height: 12px;
+            background: #dfe6ee;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+        .skeleton-line.lg { height: 18px; }
+        .skeleton-card::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            transform: translateX(-100%);
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.7), transparent);
+            animation: shimmer 1.2s infinite;
+        }
+        @keyframes shimmer {
+            100% { transform: translateX(100%); }
         }
 
         .result-card {
@@ -651,7 +723,7 @@
         <div class="header-right">
             <div class="search-box">
                 <span class="material-symbols-outlined">search</span>
-                <input type="text" id="searchInput" placeholder="ابحث عن إحداثيات أو منطقة..." onkeypress="if(event.key === 'Enter') searchLocation()">
+                <input type="text" id="searchInput" placeholder="ابحث عن إحداثيات أو منطقة..." aria-label="بحث عن إحداثيات أو منطقة" onkeypress="if(event.key === 'Enter') searchLocation()">
             </div>
             <div class="user-avatar">م</div>
         </div>
@@ -659,11 +731,11 @@
 
     <div class="floating-toolbar">
         <div class="zoom-controls">
-            <button class="zoom-btn" onclick="map.zoomIn()"><span class="material-symbols-outlined">add</span></button>
-            <button class="zoom-btn" onclick="map.zoomOut()"><span class="material-symbols-outlined">remove</span></button>
+            <button class="zoom-btn" onclick="map.zoomIn()" aria-label="تكبير الخريطة"><span class="material-symbols-outlined">add</span></button>
+            <button class="zoom-btn" onclick="map.zoomOut()" aria-label="تصغير الخريطة"><span class="material-symbols-outlined">remove</span></button>
         </div>
-        <button id="locationBtn" class="tool-btn" onclick="locateUser()" title="موقعي الحالي"><span class="material-symbols-outlined">my_location</span></button>
-        <button class="tool-btn" title="الطبقات"><span class="material-symbols-outlined">layers</span></button>
+        <button id="locationBtn" class="tool-btn" onclick="locateUser()" title="موقعي الحالي" aria-label="تحديد موقعي الحالي"><span class="material-symbols-outlined">my_location</span></button>
+        <button class="tool-btn" title="الطبقات" aria-label="الطبقات"><span class="material-symbols-outlined">layers</span></button>
     </div>
 
     <div class="bottom-ui">
@@ -676,7 +748,7 @@
         </div>
         
         <div id="getDataBtnWrapper" class="query-button-wrapper" style="display: none;">
-            <button class="query-btn" onclick="getDataAtMarker()" style="background: linear-gradient(135deg, #1B5A9A 0%, #0B2F5C 100%);">
+            <button class="query-btn alt" onclick="getDataAtMarker()">
                 <span class="material-symbols-outlined">search</span>
                 <span>الحصول على البيانات</span>
             </button>
@@ -718,12 +790,19 @@
             hideLoadingOverlay();
         }
 
+        function fetchWithTimeout(url, options = {}, timeoutMs = 10000) {
+            const controller = new AbortController();
+            const id = setTimeout(() => controller.abort(), timeoutMs);
+            const opts = { ...options, signal: controller.signal };
+            return fetch(url, opts).finally(() => clearTimeout(id));
+        }
+
         async function checkLocationAPI(lat, lng) {
-            const response = await fetch(CONFIG.apiUrl, {
+            const response = await fetchWithTimeout(CONFIG.apiUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ lat: lat, lng: lng })
-            });
+            }, 10000);
             if (!response.ok) throw new Error(`Server error: ${response.status}`);
             return await response.json();
         }
@@ -774,6 +853,33 @@
             showGetDataButton();
         }
 
+        function showLoadingPanel() {
+            const panel = document.getElementById('resultPanel');
+            const grid = document.getElementById('resultsGrid');
+            grid.innerHTML = `
+                <div class="skeleton-card">
+                    <div class="skeleton-line lg"></div>
+                    <div class="skeleton-line"></div>
+                </div>
+                <div class="skeleton-card">
+                    <div class="skeleton-line lg"></div>
+                    <div class="skeleton-line"></div>
+                </div>
+                <div class="skeleton-card">
+                    <div class="skeleton-line lg"></div>
+                    <div class="skeleton-line"></div>
+                </div>
+                <div class="skeleton-card full-span">
+                    <div class="skeleton-line lg"></div>
+                    <div class="skeleton-line"></div>
+                    <div class="skeleton-line"></div>
+                </div>
+            `;
+            hasActiveData = true;
+            panel.classList.remove('peek');
+            panel.classList.add('show');
+        }
+
         async function searchLocation() {
             const input = document.getElementById('searchInput');
             const query = input.value.trim();
@@ -794,7 +900,7 @@
             searchIcon.textContent = 'pending';
             try {
                 const viewbox = "29.4,30.8,30.1,31.3";
-                const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=eg&viewbox=${viewbox}&bounded=1&limit=1&addressdetails=1`);
+                const response = await fetchWithTimeout(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=eg&viewbox=${viewbox}&bounded=1&limit=1&addressdetails=1`, {}, 10000);
                 if (!response.ok) throw new Error('Network error');
                 const data = await response.json();
                 if (data && data.length > 0) {
@@ -806,7 +912,11 @@
                 }
             } catch (error) {
                 console.error(error);
-                alert('حدث خطأ في البحث.');
+                if (error.name === 'AbortError') {
+                    alert('انتهت مهلة الاتصال. حاول مرة أخرى.');
+                } else {
+                    alert('حدث خطأ في البحث.');
+                }
             } finally {
                 searchIcon.textContent = originalIconText;
             }
@@ -851,7 +961,8 @@
             const pos = currentMarker.getLatLng();
             const btn = document.getElementById('getDataBtnWrapper');
             const oldHTML = btn.innerHTML;
-            btn.innerHTML = `<button class="query-btn" disabled style="background:linear-gradient(135deg,#1B5A9A,#0B2F5C);"><span class="material-symbols-outlined">hourglass_empty</span><span>جاري البحث...</span></button>`;
+            btn.innerHTML = `<button class="query-btn alt" disabled><span class="material-symbols-outlined">hourglass_empty</span><span>جاري البحث...</span></button>`;
+            showLoadingPanel();
             
             try {
                 const result = await checkLocationAPI(pos.lat, pos.lng);
@@ -897,9 +1008,9 @@
                         <div class="card-header"><span class="material-symbols-outlined">verified</span><span class="card-label">الحالة</span></div>
                         <div class="card-content"><div class="card-value success">مطابق</div></div>
                     </div>
-                    <div class="rent-calculator" style="grid-column: 1/-1;">
+                    <div class="rent-calculator full-span">
                         <div class="calc-title"><span class="material-symbols-outlined">calculate</span>حاسبة الإيجار القديم</div>
-                        <div style="font-size:12px;color:#666;margin-bottom:10px;">أدخل القيمة الحالية لحساب الزيادة المقررة (${cls}).</div>
+                        <div class="help-text">أدخل القيمة الحالية لحساب الزيادة المقررة (${cls}).</div>
                         <div class="input-group">
                             <input type="number" id="currentRentInput" class="rent-input" placeholder="القيمة الحالية (جنية)" onkeypress="if(event.key==='Enter') calculateRent()">
                             <button class="calc-btn" onclick="calculateRent()">احسب</button>
@@ -912,7 +1023,7 @@
                 panel.classList.remove('peek');
                 panel.classList.add('show');
             } else {
-                grid.innerHTML = `<div class="not-found" style="grid-column:1/-1;"><div class="not-found-icon">📍</div><div class="not-found-text">الموقع خارج نطاق التغطية</div></div>`;
+                grid.innerHTML = `<div class="not-found full-span"><div class="not-found-icon">📍</div><div class="not-found-text">الموقع خارج نطاق التغطية</div></div>`;
                 hasActiveData = true;
                 panel.classList.remove('peek');
                 panel.classList.add('show');
@@ -937,14 +1048,14 @@
             for(let i=0; i<5; i++) { years.push(Math.round(r)); r *= 1.15; }
 
             output.innerHTML = `
-                <div style="border-bottom:1px dashed #ccc;padding-bottom:10px;margin-bottom:10px;">
+                <div class="calc-block">
                     <div class="result-row"><span>النوع:</span><strong class="data-value">${tName}</strong></div>
                     <div class="result-row"><span>الحالي:</span><span class="data-value">${val} ج.م</span></div>
                     <div class="result-row"><span>المعادلة:</span><span class="data-value">${rule}</span></div>
                 </div>
-                <div style="font-weight:bold;margin-bottom:8px;font-size:13px;">تدرج الزيادة (15% سنوياً):</div>
+                <div class="calc-section-title">تدرج الزيادة (15% سنوياً):</div>
                 ${years.map((y,i) => `<div class="result-row year-row"><span><span class="year-badge">السنة ${i+1}</span></span><strong class="data-value">${y} ج.م</strong></div>`).join('')}
-                <div style="font-size:10px;color:#888;margin-top:10px;text-align:center;">* أرقام تقريبية</div>
+                
             `;
             output.classList.add('show');
         }
@@ -977,12 +1088,12 @@
                 });
 
                 pData.innerHTML = `
-                    <div style="margin-bottom:15px;border-bottom:1px dashed #ccc;padding-bottom:10px;">
+                    <div class="print-block">
                         <div class="print-result-row"><span><strong>نوع المنطقة:</strong></span><span>${tName}</span></div>
                         <div class="print-result-row"><span><strong>القيمة الحالية:</strong></span><span>${cVal}</span></div>
                         <div class="print-result-row"><span><strong>المعادلة:</strong></span><span>${rule}</span></div>
                     </div>
-                    <div style="margin-top:10px;"><div style="font-weight:bold;margin-bottom:10px;">جدول التدرج:</div>${yHtml}</div>
+                    <div class="print-section"><div class="print-section-title">جدول التدرج:</div>${yHtml}</div>
                 `;
             } else {
                 pSec.style.display = 'none';
@@ -991,55 +1102,127 @@
         }
 
         // ============================================================
-        // SMART SWIPE LOGIC
+        // SMART SWIPE LOGIC (SMOOTH + SNAP)
         // ============================================================
         function initPanelSwipe() {
             const panel = document.getElementById('resultPanel');
             const handle = document.getElementById('dragHandle');
-            let startY = 0, endY = 0, dragging = false;
+            let startY = 0;
+            let currentY = 0;
+            let baseTranslate = 0;
+            let lastY = 0;
+            let lastTime = 0;
+            let velocity = 0;
+            let dragging = false;
+            let rafId = 0;
+            let peekHeight = 0;
+            let moved = false;
 
-            handle.addEventListener('touchstart', e => { 
-                startY = e.touches[0].clientY; 
-                dragging = true; 
-            }, {passive: false});
+            const updatePeek = () => {
+                const rect = panel.getBoundingClientRect();
+                peekHeight = Math.max(0, rect.height - 52);
+            };
 
-            handle.addEventListener('touchmove', e => {
+            const getPeekTranslate = () => {
+                if (!peekHeight) updatePeek();
+                return peekHeight;
+            };
+
+            const setTranslate = (y) => {
+                panel.style.transform = `translateY(${y}px)`;
+            };
+
+            const applyDrag = () => {
+                rafId = 0;
+                const peek = getPeekTranslate();
+                let next = baseTranslate + (currentY - startY);
+                if (next < 0) next = next * 0.35;
+                if (next > peek) next = peek + (next - peek) * 0.35;
+                setTranslate(next);
+            };
+
+            const onStart = (clientY) => {
+                dragging = true;
+                moved = false;
+                updatePeek();
+                startY = clientY;
+                currentY = clientY;
+                lastY = clientY;
+                lastTime = performance.now();
+                velocity = 0;
+                baseTranslate = panel.classList.contains('peek') ? getPeekTranslate() : 0;
+                panel.classList.add('dragging');
+            };
+
+            const onMove = (clientY) => {
                 if (!dragging) return;
-                endY = e.touches[0].clientY;
-                const delta = endY - startY;
-                
-                // إذا كان السحب للأسفل (إغلاق)
-                if (delta > 0) {
-                    e.preventDefault();
-                    panel.style.transform = `translateY(${delta}px)`; 
-                    panel.style.transition = 'none'; 
-                } 
-                // إذا كان السحب للأعلى (فتح)
-                else if (delta < 0 && panel.classList.contains('peek')) {
-                    e.preventDefault();
-                }
-            }, {passive: false});
+                currentY = clientY;
+                if (Math.abs(currentY - startY) > 6) moved = true;
+                const now = performance.now();
+                const dt = Math.max(1, now - lastTime);
+                velocity = (clientY - lastY) / dt;
+                lastY = clientY;
+                lastTime = now;
+                if (!rafId) rafId = requestAnimationFrame(applyDrag);
+            };
 
-            handle.addEventListener('touchend', () => {
+            const onEnd = () => {
                 if (!dragging) return;
                 dragging = false;
-                const delta = endY - startY;
-                panel.style.transition = 'transform 0.4s cubic-bezier(0.25, 1, 0.5, 1)';
-                panel.style.transform = ''; 
-                
-                // شرط الإغلاق
-                if (delta > 50) {
+                panel.classList.remove('dragging');
+                if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
+
+                const peek = getPeekTranslate();
+                const delta = currentY - startY;
+                const translateNow = baseTranslate + delta;
+                const clamped = Math.min(Math.max(translateNow, 0), peek);
+                const openByPosition = clamped < (peek * 0.45);
+                const openByVelocity = velocity < -0.6;
+                const closeByVelocity = velocity > 0.6;
+
+                const springTo = (target) => {
+                    panel.classList.add('spring');
+                    panel.style.transform = `translateY(${target}px)`;
+                    const cleanup = () => {
+                        panel.classList.remove('spring');
+                        panel.style.transform = '';
+                        panel.removeEventListener('transitionend', cleanup);
+                    };
+                    panel.addEventListener('transitionend', cleanup);
+                };
+
+                if (closeByVelocity) {
                     closePanel();
-                }
-                // شرط الفتح
-                else if (delta < -30 && panel.classList.contains('peek')) {
+                    if (panel.classList.contains('peek')) springTo(peek);
+                } else if (openByVelocity || openByPosition) {
                     panel.classList.remove('peek');
                     panel.classList.add('show');
+                    springTo(0);
+                } else {
+                    closePanel();
+                    if (panel.classList.contains('peek')) springTo(peek);
                 }
-                startY = 0; endY = 0;
-            });
+            };
 
-            handle.addEventListener('click', () => {
+            handle.addEventListener('pointerdown', (e) => {
+                e.preventDefault();
+                handle.setPointerCapture(e.pointerId);
+                onStart(e.clientY);
+            });
+            handle.addEventListener('pointermove', (e) => {
+                if (!dragging) return;
+                e.preventDefault();
+                onMove(e.clientY);
+            });
+            handle.addEventListener('pointerup', (e) => {
+                e.preventDefault();
+                onEnd();
+            });
+            handle.addEventListener('pointercancel', onEnd);
+            window.addEventListener('resize', updatePeek);
+
+            handle.addEventListener('click', (e) => {
+                if (moved) { e.preventDefault(); return; }
                 if (panel.classList.contains('peek')) { 
                     panel.classList.remove('peek'); 
                     panel.classList.add('show'); 
